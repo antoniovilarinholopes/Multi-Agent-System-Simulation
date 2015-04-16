@@ -25,7 +25,7 @@ public class Colony : MonoBehaviour {
 			playerTag = "PlayerA";
 			colonyLetter = "A";
 		} else {
-			individualColor = Color.red;
+			individualColor = Color.green;
 			playerTag = "PlayerB";
 			colonyLetter = "B";
 		}

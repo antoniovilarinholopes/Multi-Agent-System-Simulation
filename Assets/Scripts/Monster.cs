@@ -7,11 +7,13 @@ public class Monster : MonoBehaviour {
 	private GameObject agent;
 	private float hitPoints = 12f;
 	private float hitRate = 2f;
-	Color flashColour = new Color(1f, 0f, 0f, 0.1f);
+	float flashSpeed = 5f;
+	Color flashColour = Color.red;
+	Color myColor;
 
 	// Use this for initialization
 	void Start () {
-		
+		myColor = this.gameObject.transform.GetChild(0).GetChild(1).GetComponent<Renderer> ().material.color;		
 	}
 	
 	// Update is called once per frame
@@ -39,7 +41,7 @@ public class Monster : MonoBehaviour {
 	}
 
 	public void TakeDamage(GameObject ind) {
-		Material mat = GetComponent<Renderer> ().material;
+		Material mat = this.gameObject.transform.GetChild(0).GetChild(1).GetComponent<Renderer> ().material;
 		Color color = mat.color;
 		mat.color = flashColour;
 		transform.LookAt (ind.transform.position);
@@ -47,6 +49,7 @@ public class Monster : MonoBehaviour {
 		if (hitPoints <= 0) {
 			Object.Destroy(this.gameObject);
 		}
+		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
 	}
 
 	private bool AgentAhead() {

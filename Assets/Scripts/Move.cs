@@ -7,6 +7,9 @@ public class Move : MonoBehaviour
 	bool isFoodOnSight, isEnemyOnSight, isObstacleOnSight, isColonyOnSight;
 	GameObject foodOnSight, obstacleOnSight, enemyOnSight, colonyOnSight;
 	GameObject food, enemy, wallObj, colony;
+	Color flashColour = Color.red;
+	float flashSpeed = 5f;
+	Color myColor;
 	public float distance, smooth;
 	private float hitPoints = 20f;
 	private float hitRate = 2f;
@@ -24,6 +27,7 @@ public class Move : MonoBehaviour
 		isFoodOnSight = false;
 		isEnemyOnSight = false;
 		isObstacleOnSight = false;
+		myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
 	}
 
 	/*
@@ -35,6 +39,7 @@ public class Move : MonoBehaviour
 		if (EndOfWorld ()) {
 			SendBack ();
 		} else if (AgentAhead ()) {
+			//FIXME
 			EvadeAgent ();
 		} else if (FoodAhead () && !HasFood ()) {
 			PickFood ();
@@ -48,9 +53,9 @@ public class Move : MonoBehaviour
 			PursueFood ();
 		} else if (HasFood () && ColonyOnSight ()){
 			GotoBase ();
-		}else if (EnemyOnSight ()) {
-			EvadeMonster ();
-		} else if (ObstacleOnSight ()) {
+		}else if (EnemyOnSight () && !HasFood ()) {
+			TryToDestroyEnemy ();
+		} else if (ObstacleOnSight () && !HasFood ()) {
 			PursueObstacle ();
 		} else {
 			MoveRandomly ();
@@ -116,6 +121,14 @@ public class Move : MonoBehaviour
 		return;
 	}
 
+	void TryToDestroyEnemy () {
+		if (hitPoints > 10f) {
+			PursueMonster ();
+		} else {
+			EvadeMonster ();
+		}
+	}
+
 	void EvadeAgent () {
 		int rand = Random.Range(1, 4);
 		if (rand <= 2) {
@@ -134,6 +147,7 @@ public class Move : MonoBehaviour
 	void DropFood() {
 		hasFood = false;
 		Destroy(food);
+		food = null;
 		Colony colonyComp = colony.GetComponent<Colony>();
 		if(colonyComp != null) {
 			colonyComp.IncreaseScore();
@@ -161,6 +175,11 @@ public class Move : MonoBehaviour
 	void PursueFood () {
 		Pursue(this.foodOnSight);
 	}
+
+	void PursueMonster () {
+		Pursue (this.enemyOnSight);
+	}
+
 
 	void GotoBase () {
 		Pursue (this.colonyOnSight);
@@ -220,11 +239,6 @@ public class Move : MonoBehaviour
 		SetIsEnemyOnSight (false, null);
 		SetIsObstacleOnSight (false, null);
 		SetIsColonyOnSight (false, null);
-		/*
-		isFoodOnSight = false;
-		isEnemyOnSight = false;
-		isObstacleOnSight = false;
-		*/
 	}
 
 	void Pursue(GameObject target) {
@@ -288,6 +302,9 @@ public class Move : MonoBehaviour
 
 	// Called by monsters
 	public void TakeDamage() {
+		Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
+		Color color = mat.color;
+		mat.color = flashColour;
 		hitPoints -= Time.deltaTime * hitRate;
 		Debug.Log ("Agent Hitpoints: " + hitPoints);
 		if (hitPoints <= 0) {
@@ -297,6 +314,7 @@ public class Move : MonoBehaviour
 			}
 			Object.Destroy(this.gameObject);
 		}
+		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
 	}
 }
 

@@ -9,9 +9,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 468436}
   - 33: {fileID: 3357044}
-  - 135: {fileID: 13565886}
   - 23: {fileID: 2313780}
-  - 114: {fileID: 11422654}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Untagged
@@ -28,6 +26,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 424166}
   - 114: {fileID: 11469740}
+  - 135: {fileID: 13553710}
   m_Layer: 0
   m_Name: Food
   m_TagString: Food
@@ -42,7 +41,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 158226}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 8}
+  m_LocalPosition: {x: 0, y: 2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 468436}
@@ -55,7 +54,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 138030}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 2}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: .5, y: .5, z: .5}
   m_Children: []
   m_Father: {fileID: 424166}
@@ -91,17 +90,6 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 138030}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &11422654
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 138030}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4de5a63d01f36f4428955b01d34b8835, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &11469740
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -113,17 +101,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4de5a63d01f36f4428955b01d34b8835, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!135 &13565886
+--- !u!135 &13553710
 SphereCollider:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 138030}
+  m_GameObject: {fileID: 158226}
   m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 1
+  m_Radius: .800000012
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &100100000
 Prefab:
