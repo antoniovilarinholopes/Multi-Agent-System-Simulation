@@ -34,18 +34,20 @@ public class Move : MonoBehaviour
 	void Update() {
 		if (EndOfWorld ()) {
 			SendBack ();
-		} else if (AgentAhead()) {
-			EvadeAgent();
+		} else if (AgentAhead ()) {
+			EvadeAgent ();
 		} else if (FoodAhead () && !HasFood ()) {
 			PickFood ();
 		} else if (AtBase () && HasFood ()) {
 			DropFood ();
-		} else if (EnemyAhead ()){
-			HitEnemy();
-		} else if (WallAhead()) {
-			HitWall();
-		} else if (FoodOnSight()) {
-			PursueFood();
+		} else if (EnemyAhead ()) {
+			HitEnemy ();
+		} else if (WallAhead ()) {
+			HitWall ();
+		} else if (FoodOnSight () && !HasFood ()) {
+			PursueFood ();
+		} else if (HasFood() && ColonyOnSight()){
+			GotoBase ();
 		}else if (EnemyOnSight()) {
 			EvadeMonster();
 		} else if (ObstacleOnSight()) {
@@ -100,6 +102,10 @@ public class Move : MonoBehaviour
 		return isObstacleOnSight;
 	}
 
+	bool ColonyOnSight ()	{
+		return isColonyOnSight;
+	}
+
 	/*
 	 * Actuators
 	 */
@@ -119,7 +125,7 @@ public class Move : MonoBehaviour
 		}
 		agentAhead = false;
 	}
-
+	
 	void PickFood (){
 		this.foodAhead = false;
 		this.hasFood = true;
@@ -154,6 +160,10 @@ public class Move : MonoBehaviour
 
 	void PursueFood () {
 		Pursue(this.foodOnSight);
+	}
+
+	void GotoBase () {
+		Pursue (this.colonyOnSight);
 	}
 
 	void EvadeMonster () {
@@ -206,13 +216,19 @@ public class Move : MonoBehaviour
 	}
 
 	void CleanSight () {
+		SetIsFoodOnSight (false, null);
+		SetIsEnemyOnSight (false, null);
+		SetIsObstacleOnSight (false, null);
+		SetIsColonyOnSight (false, null);
+		/*
 		isFoodOnSight = false;
 		isEnemyOnSight = false;
 		isObstacleOnSight = false;
+		*/
 	}
 
 	void Pursue(GameObject target) {
-		pursuing = true;
+		//pursuing = true;
 		Vector3 targetDir = target.transform.position - transform.position;
 		float step  = smooth * Time.deltaTime;
 		Vector3 newDir = Vector3.RotateTowards(transform.forward, targetDir, step, 0.0f);

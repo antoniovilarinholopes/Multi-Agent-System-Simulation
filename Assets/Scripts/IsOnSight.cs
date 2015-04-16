@@ -19,6 +19,12 @@ public class IsOnSight : MonoBehaviour {
 			if(collider.tag == "Food") {
 				Debug.Log ("Tag: " + hit.collider.gameObject.tag);
 			}
+			/*FIXME
+			if(collider.tag == "Wall") {
+				bool t = collider.gameObject == hit.collider.gameObject;
+				Debug.Log ("Here:" + t);
+				return hit.collider.gameObject.tag == collider.tag && collider.gameObject == hit.collider.gameObject;
+			}*/
 			return hit.collider.gameObject.tag == collider.tag;
 		}
 		return false;
@@ -29,12 +35,14 @@ public class IsOnSight : MonoBehaviour {
 			//FIXME ugly as s**t
 			//Debug.Log("Is on Sight: " + IsObjectOnSight(collider));
 			if (IsObjectOnSight (collider)) {
+				//Debug.Log("Food on Sight");
 				myRobot.SetIsFoodOnSight (true, collider.gameObject);
 			} else {
 				myRobot.SetIsFoodOnSight (false, null);
 			}
 		} else if (collider.tag == "Monster") {
 			if (IsObjectOnSight (collider)) {
+				//Debug.Log("Monster on Sight");
 				myRobot.SetIsEnemyOnSight (true, collider.gameObject);
 			} else {
 				myRobot.SetIsEnemyOnSight (false, null);
@@ -42,6 +50,7 @@ public class IsOnSight : MonoBehaviour {
 		} else if (collider.tag == "Wall") {
 			//FIXME doesn't work properly
 			if (IsObjectOnSight (collider)) {
+				Debug.Log("Wall on Sight");
 				myRobot.SetIsObstacleOnSight (true, collider.gameObject);
 			} else {
 				myRobot.SetIsObstacleOnSight (false, null);
@@ -49,6 +58,7 @@ public class IsOnSight : MonoBehaviour {
 		} else if (collider.gameObject.tag.StartsWith ("Col")) {
 			if (collider.gameObject.tag.Substring (3) == myRobot.tag.Substring (6)) {
 				if (IsObjectOnSight (collider)) {
+					//Debug.Log("My colony on sight " + myRobot.tag + ":" + collider.gameObject.tag);
 					myRobot.SetIsColonyOnSight (true, collider.gameObject);
 				} else {
 					myRobot.SetIsColonyOnSight (false, null);;
