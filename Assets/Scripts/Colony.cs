@@ -73,7 +73,7 @@ public class Colony : MonoBehaviour {
 	}
 
 	void OnTriggerExit(Collider collider) {
-		if(collider.gameObject.tag.StartsWith("Player") || collider.gameObject.tag.Substring(6) == colonyLetter) {
+		if(collider.gameObject.tag.StartsWith("Player") && collider.gameObject.tag.Substring(6) == colonyLetter) {
 			Move move = collider.GetComponent<Move>();
 			move.SetAtBase(false, null);
 		}
@@ -81,7 +81,7 @@ public class Colony : MonoBehaviour {
 
 	void OnTriggerEnter(Collider collider) {
 		//Debug.Log ("Enter " + collider.gameObject.tag.Substring(6));
-		if(collider.gameObject.tag.StartsWith("Player") || collider.gameObject.tag.Substring(6) == colonyLetter) {
+		if(collider.gameObject.tag.StartsWith("Player") && collider.gameObject.tag.Substring(6) == colonyLetter) {
 			Move move = collider.GetComponent<Move>();
 			move.SetAtBase(true, gameObject);
 		}

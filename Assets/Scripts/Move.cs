@@ -8,7 +8,7 @@ public class Move : MonoBehaviour
 	public float distance, smooth;
 	private float hitPoints = 20f;
 	private float hitRate = 2f;
-	private const float SPEED = 3f;
+	private const float SPEED = 10f;
 	
 	void Start() {
 		endOfWorld = false;
