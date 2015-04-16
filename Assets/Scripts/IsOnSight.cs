@@ -10,6 +10,12 @@ public class IsOnSight : MonoBehaviour {
 		myRobot = this.transform.parent.GetComponent<Move>();
 	}
 
+
+	void Update() {
+
+
+	}
+
 	bool IsObjectOnSight(Collider collider) {
 		RaycastHit hit;
 		Vector3 direction = collider.transform.position - transform.parent.position;

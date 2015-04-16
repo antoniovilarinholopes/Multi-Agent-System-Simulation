@@ -46,16 +46,16 @@ public class Move : MonoBehaviour
 			HitWall ();
 		} else if (FoodOnSight () && !HasFood ()) {
 			PursueFood ();
-		} else if (HasFood() && ColonyOnSight()){
+		} else if (HasFood () && ColonyOnSight ()){
 			GotoBase ();
-		}else if (EnemyOnSight()) {
-			EvadeMonster();
-		} else if (ObstacleOnSight()) {
-			PursueObstacle();
+		}else if (EnemyOnSight ()) {
+			EvadeMonster ();
+		} else if (ObstacleOnSight ()) {
+			PursueObstacle ();
 		} else {
 			MoveRandomly ();
 		}
-		CleanSight();
+		CleanSight ();
 	}
 
 	/*

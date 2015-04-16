@@ -87,7 +87,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hitRate: 1
   hitPoints: 20
-  damageImage: {fileID: 0}
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1
