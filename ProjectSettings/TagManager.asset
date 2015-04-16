@@ -5,11 +5,12 @@ TagManager:
   serializedVersion: 2
   tags:
   - Wall
-  - Indv
   - ColA
   - ColB
   - PlayerA
   - PlayerB
+  - Food
+  - Monster
   layers:
   - Default
   - TransparentFX

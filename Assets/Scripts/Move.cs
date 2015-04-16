@@ -4,6 +4,8 @@ using System.Collections;
 public class Move : MonoBehaviour
 {	
 	bool endOfWorld, foodAhead, obstacle, enemyInFront, hasFood, atBase, wallAhead, agentAhead;
+	bool isFoodOnSight, isEnemyOnSight, isObstacleOnSight, isColonyOnSight;
+	GameObject foodOnSight, obstacleOnSight, enemyOnSight, colonyOnSight;
 	GameObject food, enemy, wallObj, colony;
 	public float distance, smooth;
 	private float hitPoints = 20f;
@@ -19,6 +21,9 @@ public class Move : MonoBehaviour
 		atBase = false;
 		enemyInFront = false;
 		agentAhead = false;
+		isFoodOnSight = false;
+		isEnemyOnSight = false;
+		isObstacleOnSight = false;
 	}
 
 	/*
@@ -58,6 +63,27 @@ public class Move : MonoBehaviour
 		} else {
 			wallAhead = false;
 		}
+	}
+
+
+	public void SetIsFoodOnSight (bool isFoodOnSight, GameObject foodOnSight) {
+		this.isFoodOnSight = isFoodOnSight;
+		this.foodOnSight = foodOnSight;
+	}
+
+	public void SetIsEnemyOnSight (bool isEnemyOnSight, GameObject enemyOnSight) {
+		this.isEnemyOnSight = isEnemyOnSight;
+		this.enemyOnSight = enemyOnSight;
+	}
+
+	public void SetIsObstacleOnSight (bool isObstacleOnSight, GameObject obstacleOnSight) {
+		this.isObstacleOnSight = isObstacleOnSight;
+		this.obstacleOnSight = obstacleOnSight;
+	}
+
+	public void SetIsColonyOnSight (bool isColonyOnSight, GameObject colonyOnSight) {
+		this.isColonyOnSight = isColonyOnSight;
+		this.colonyOnSight = colonyOnSight;
 	}
 
 	private void HitEnemy() {
