@@ -3,17 +3,18 @@ using System.Collections;
 
 public class Move : MonoBehaviour
 {	
-	bool endOfWorld, foodAhead, obstacle, enemy, hasFood, atBase;
-	GameObject food;
+	bool endOfWorld, foodAhead, obstacle, enemyInFront, hasFood, atBase;
+	GameObject food, enemy;
 	public float distance, smooth;
 
 	void Start() {
 		endOfWorld = false;
 		foodAhead = false;
 		obstacle = false;
-		enemy = false;
+		enemyInFront = false;
 		hasFood = false;
 		atBase = false;
+		enemyInFront = false;
 	}
 
 	void Update() {
@@ -23,17 +24,35 @@ public class Move : MonoBehaviour
 			PickFood ();
 		} else if (AtBase () && HasFood ()) {
 			DropFood ();
-		} else {
+		} else if (EnemyAhead ()){
+			//for now send back 
+			RunFromEnemy ();
+		}else {
 			MoveRandomly ();
 		}
 	}
 
+	void RunFromEnemy() {
+		enemy = null;
+		enemyInFront = false;
+		SendBack ();
+		MoveForward ();
+	}
+
+	bool EnemyAhead() {
+		return enemyInFront;
+	}
 	bool EndOfWorld() {
 		return endOfWorld;
 	}
 
 	public void SetEndOfWorld() {
 		endOfWorld = true;
+	}
+
+	public void SetEnemyInFront(GameObject enemy) {
+		enemyInFront = true;
+		this.enemy = enemy;
 	}
 
 	// Box collider (mundo) chama esta funcao quando o agente sai
@@ -66,6 +85,7 @@ public class Move : MonoBehaviour
 	}
 
 	void DropFood (){
+		this.food = null;
 		return;
 	}
 

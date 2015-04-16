@@ -6,6 +6,8 @@ public class PushBack : MonoBehaviour {
 
 	void OnTriggerExit(Collider collider) {
 		Move move = collider.GetComponent<Move> ();
-		move.SetEndOfWorld ();
+		if (move != null) {
+			move.SetEndOfWorld ();
+		}
 	}
 }
