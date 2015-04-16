@@ -6,11 +6,14 @@ public class Colony : MonoBehaviour {
 	
 	public GameObject prefabInd;
 	IList<GameObject> individuals;
-	int score;
+	float foodCount;
+	const float foodMultiplier = 5f;
+	const float timeToRemoveHealth = 10f;
+	float lastTime;
 	string colonyLetter;
-	public int pointsPerFood;
+	//public int pointsPerFood;
 
-	void Awake() {
+	void Awake () {
 		individuals = new List<GameObject>();
 
 		GameObject individual;
@@ -29,7 +32,7 @@ public class Colony : MonoBehaviour {
 			playerTag = "PlayerB";
 			colonyLetter = "B";
 		}
-		for(int i = 0; i < 4; i++) {
+		for(int i = 0; i < 8; i++) {
 			maxAttempts = 0;
 			do {
 				position = new Vector3(Random.Range(-10f, 10f), 0, Random.Range(-10f, 10f));
@@ -50,29 +53,42 @@ public class Colony : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		score = 0;
+		foodCount = 0;
+		lastTime = Time.time;
 	}
 
-	public void IncreaseScore() {
-		score += pointsPerFood;
-		Debug.Log ("Score: " + score);
+	void Update () {
+		float timeElapsed = Time.time - lastTime;
+		if (timeElapsed >= timeToRemoveHealth) {
+			lastTime = Time.time;
+			foreach(GameObject ind in individuals) {
+				Move indComponent = ind.GetComponent<Move> ();
+				indComponent.DecreaseLife(2f);
+			}
+		}
+		//each food heals 5 health
+	}
+
+	public void IncreaseFood () {
+		foodCount += 1*foodMultiplier;
+		Debug.Log ("Score: " + foodCount);
 		if(colonyLetter == "A") {
 			Text text = GameObject.Find("PointsA").GetComponent<Text>();
-			text.text = "" + score;
+			text.text = "" + foodCount;
 		} else {
 			Text text = GameObject.Find("PointsB").GetComponent<Text>();
-			text.text = "" + score;
+			text.text = "" + foodCount;
 		}
 	}
 
-	void OnTriggerExit(Collider collider) {
+	void OnTriggerExit (Collider collider) {
 		if(collider.gameObject.tag.StartsWith("Player") && collider.gameObject.tag.Substring(6) == colonyLetter) {
 			Move move = collider.GetComponent<Move>();
 			move.SetAtBase(false, null);
 		}
 	}
 
-	void OnTriggerEnter(Collider collider) {
+	void OnTriggerEnter (Collider collider) {
 		//Debug.Log ("Enter " + collider.gameObject.tag.Substring(6));
 		if(collider.gameObject.tag.StartsWith("Player") && collider.gameObject.tag.Substring(6) == colonyLetter) {
 			Move move = collider.GetComponent<Move>();

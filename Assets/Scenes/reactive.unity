@@ -306,7 +306,7 @@ Transform:
   m_GameObject: {fileID: 585271827}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 74.3000031, y: .100000001, z: 32.4000015}
-  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_LocalScale: {x: 3, y: 2, z: 3}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 5
@@ -322,7 +322,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefabInd: {fileID: 123646, guid: 684d748694847af4483c3cc83a085542, type: 2}
-  pointsPerFood: 1
 --- !u!1 &804953730
 GameObject:
   m_ObjectHideFlags: 0
@@ -861,7 +860,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefabInd: {fileID: 123646, guid: 684d748694847af4483c3cc83a085542, type: 2}
-  pointsPerFood: 1
 --- !u!65 &1623446773
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -912,8 +910,8 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1623446771}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -83, y: .100000001, z: -30.2999992}
-  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_LocalPosition: {x: -74.5, y: .100000001, z: -30.7000008}
+  m_LocalScale: {x: 3, y: 2, z: 3}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
@@ -926,7 +924,7 @@ Prefab:
     m_Modifications:
     - target: {fileID: 439604, guid: 022dfce2c48808a47a1493bdbaf0daba, type: 2}
       propertyPath: m_LocalPosition.x
-      value: -70
+      value: -54.4000015
       objectReference: {fileID: 0}
     - target: {fileID: 439604, guid: 022dfce2c48808a47a1493bdbaf0daba, type: 2}
       propertyPath: m_LocalPosition.y
@@ -934,7 +932,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 439604, guid: 022dfce2c48808a47a1493bdbaf0daba, type: 2}
       propertyPath: m_LocalPosition.z
-      value: -30
+      value: -24.1000004
       objectReference: {fileID: 0}
     - target: {fileID: 439604, guid: 022dfce2c48808a47a1493bdbaf0daba, type: 2}
       propertyPath: m_LocalRotation.x

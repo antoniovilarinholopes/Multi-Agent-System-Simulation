@@ -8,10 +8,10 @@ public class Move : MonoBehaviour
 	GameObject foodOnSight, obstacleOnSight, enemyOnSight, colonyOnSight;
 	GameObject food, enemy, wallObj, colony;
 	Color flashColour = Color.red;
-	float flashSpeed = 5f;
 	Color myColor;
+	float flashSpeed = 5f;
 	public float distance, smooth;
-	private float hitPoints = 20f;
+	private float health = 20f;
 	private float hitRate = 2f;
 	private const float SPEED = 10f;
 	
@@ -53,7 +53,9 @@ public class Move : MonoBehaviour
 			PursueFood ();
 		} else if (HasFood () && ColonyOnSight ()){
 			GotoBase ();
-		}else if (EnemyOnSight () && !HasFood ()) {
+		} else if (ColonyOnSight () && HasLowLife ()) {
+			GotoBase ();
+		} else if (EnemyOnSight () && !HasFood ()) {
 			TryToDestroyEnemy ();
 		} else if (ObstacleOnSight () && !HasFood ()) {
 			PursueObstacle ();
@@ -67,7 +69,11 @@ public class Move : MonoBehaviour
 	 * Sensors
 	 */
 
-	bool EndOfWorld() {
+	bool HasLowLife () {
+		return health <= 5;
+	}
+
+	bool EndOfWorld () {
 		return endOfWorld;
 	}
 
@@ -115,14 +121,19 @@ public class Move : MonoBehaviour
 	 * Actuators
 	 */
 	// TODO: Do we need the public here?
-	public void SendBack() {
+	public void SendBack () {
 		transform.Rotate (0f, 180f, 0f);
 		endOfWorld = false;
 		return;
 	}
 
+
+	void EatFood (float healHealth) {
+		this.health += healHealth;
+	}
+
 	void TryToDestroyEnemy () {
-		if (hitPoints > 10f) {
+		if (health > 10f) {
 			PursueMonster ();
 		} else {
 			EvadeMonster ();
@@ -150,7 +161,7 @@ public class Move : MonoBehaviour
 		food = null;
 		Colony colonyComp = colony.GetComponent<Colony>();
 		if(colonyComp != null) {
-			colonyComp.IncreaseScore();
+			colonyComp.IncreaseFood();
 		}
 	}
 
@@ -305,9 +316,9 @@ public class Move : MonoBehaviour
 		Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
 		Color color = mat.color;
 		mat.color = flashColour;
-		hitPoints -= Time.deltaTime * hitRate;
-		Debug.Log ("Agent Hitpoints: " + hitPoints);
-		if (hitPoints <= 0) {
+		health -= Time.deltaTime * hitRate;
+		Debug.Log ("Agent Hitpoints: " + health);
+		if (health <= 0) {
 			Debug.Log ("Agent Died");
 			if(HasFood()) {
 				this.food.GetComponent<PickUpable>().SetBeingCarried(false);
@@ -316,5 +327,24 @@ public class Move : MonoBehaviour
 		}
 		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
 	}
+
+	public void DecreaseLife (float lifeDecreased) {
+		Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
+		Color color = mat.color;
+		mat.color = flashColour;
+		//life -= Time.deltaTime * lifeDecreased;
+		health -= lifeDecreased;
+		Debug.Log ("Agent Life: " + health);
+		if (health <= 0) {
+			Debug.Log ("Agent Died");
+			if(HasFood()) {
+				this.food.GetComponent<PickUpable>().SetBeingCarried(false);
+			}
+			Object.Destroy(this.gameObject);
+		}
+		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
+	}
+
+
 }
 

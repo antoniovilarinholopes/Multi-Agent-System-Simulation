@@ -62,7 +62,7 @@ public class IsOnSight : MonoBehaviour {
 		} else if (collider.gameObject.tag.StartsWith ("Col")) {
 			if (collider.gameObject.tag.Substring (3) == myRobot.tag.Substring (6)) {
 				if (IsObjectOnSight (collider)) {
-					Debug.Log("My colony on sight " + myRobot.tag + ":" + collider.gameObject.tag);
+					//Debug.Log("My colony on sight " + myRobot.tag + ":" + collider.gameObject.tag);
 					myRobot.SetIsColonyOnSight (true, collider.gameObject);
 				} else {
 					myRobot.SetIsColonyOnSight (false, null);;
