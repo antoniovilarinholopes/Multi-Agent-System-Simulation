@@ -3,9 +3,10 @@ using System.Collections;
 
 public class Move : MonoBehaviour
 {	
-	bool endOfWorld, foodAhead, obstacle, enemyInFront, hasFood, atBase, wallAhead, agentAhead;
-	bool isFoodOnSight, isEnemyOnSight, isObstacleOnSight, isColonyOnSight;
-	GameObject foodOnSight, obstacleOnSight, enemyOnSight, colonyOnSight;
+	bool endOfWorld, hasFood, atBase;
+	bool enemyInAhead,foodAhead, obstacleAhead, agentAhead;
+	bool isFoodOnSight, isSpecFoodOnSight, isEnemyOnSight, isObstacleOnSight, isColonyOnSight;
+	GameObject foodOnSight, specFoodOnSight, obstacleOnSight, enemyOnSight, colonyOnSight;
 	GameObject food, enemy, wallObj, colony;
 	Color flashColour = Color.red;
 	Color myColor;
@@ -18,15 +19,15 @@ public class Move : MonoBehaviour
 	void Start() {
 		endOfWorld = false;
 		foodAhead = false;
-		obstacle = false;
-		enemyInFront = false;
+		enemyInAhead = false;
 		hasFood = false;
 		atBase = false;
-		enemyInFront = false;
+		enemyInAhead = false;
 		agentAhead = false;
 		isFoodOnSight = false;
 		isEnemyOnSight = false;
 		isObstacleOnSight = false;
+		isSpecFoodOnSight = false;
 		myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
 	}
 
@@ -43,7 +44,6 @@ public class Move : MonoBehaviour
 		if (EndOfWorld ()) {
 			SendBack ();
 		} else if (AgentAhead ()) {
-			//FIXME
 			EvadeAgent ();
 		} else if (FoodAhead () && !HasFood ()) {
 			PickFood ();
@@ -51,10 +51,12 @@ public class Move : MonoBehaviour
 			DropFood ();
 		} else if (EnemyAhead ()) {
 			HitEnemy ();
-		} else if (WallAhead ()) {
+		} else if (ObstacleAhead ()) {
 			HitWall ();
+		} else if (SpecFoodOnSight () && !HasFood ()) {
+			PursueFood (specFoodOnSight);
 		} else if (FoodOnSight () && !HasFood ()) {
-			PursueFood ();
+			PursueFood (foodOnSight);
 		} else if (HasFood () && ColonyOnSight ()){
 			GotoBase ();
 		} else if (ColonyOnSight () && HasLowLife ()) {
@@ -72,76 +74,79 @@ public class Move : MonoBehaviour
 	/*
 	 * Sensors
 	 */
-
-	public bool HasLowLife () {
-		return health <= 5;
-	}
-
-	bool EndOfWorld () {
-		return endOfWorld;
+	
+	public bool AtBase () {
+		return atBase;
 	}
 
 	bool AgentAhead () {
 		return agentAhead;
 	}
 
-	bool FoodAhead (){
-		return foodAhead;
+	bool ColonyOnSight ()	{
+		return isColonyOnSight;
 	}
 
-	bool HasFood ()	{
-		return hasFood;
-	}
-
-	public bool AtBase () {
-		return atBase;
+	bool EndOfWorld () {
+		return endOfWorld;
 	}
 
 	bool EnemyAhead() {
-		return enemyInFront;
+		return enemyInAhead;
 	}
 
-	bool WallAhead() {
-		return wallAhead;
-	}
-
-	bool FoodOnSight () {
-		return isFoodOnSight;
-	}
-
+	
 	bool EnemyOnSight () {
 		return isEnemyOnSight;
 	}
 
+
+	bool FoodAhead (){
+		return foodAhead;
+	}
+	
+	bool FoodOnSight () {
+		return isFoodOnSight;
+	}
+
+	public bool HasLowLife () {
+		return health <= 5;
+	}
+	
+	bool HasFood ()	{
+		return hasFood;
+	}
+
+	
 	bool ObstacleOnSight ()	{
 		return isObstacleOnSight;
 	}
 
-	bool ColonyOnSight ()	{
-		return isColonyOnSight;
+	bool SpecFoodOnSight () {
+		return isSpecFoodOnSight;
+	}
+
+	bool ObstacleAhead() {
+		return obstacleAhead;
 	}
 
 	/*
 	 * Actuators
 	 */
-	// TODO: Do we need the public here?
-	public void SendBack () {
-		transform.Rotate (0f, 180f, 0f);
-		endOfWorld = false;
-		return;
-	}
 
-
-	public void EatFood (float healHealth) {
-		this.health += healHealth;
-	}
-
-	void TryToDestroyEnemy () {
-		if (health > 10f) {
-			PursueMonster ();
-		} else {
-			EvadeMonster ();
+	void DropFood() {
+		hasFood = false;
+		string food_tag = food.tag;
+		Destroy(food);
+		food = null;
+		Colony colonyComp = colony.GetComponent<Colony>();
+		if(colonyComp != null) {
+			colonyComp.IncreaseFood(food_tag);
 		}
+	}
+	
+	void EvadeMonster () {
+		EvadeAgent();
 	}
 
 	void EvadeAgent () {
@@ -154,19 +159,8 @@ public class Move : MonoBehaviour
 		agentAhead = false;
 	}
 	
-	void PickFood (){
-		this.foodAhead = false;
-		this.hasFood = true;
-	}
-
-	void DropFood() {
-		hasFood = false;
-		Destroy(food);
-		food = null;
-		Colony colonyComp = colony.GetComponent<Colony>();
-		if(colonyComp != null) {
-			colonyComp.IncreaseFood();
-		}
+	void GotoBase () {
+		Pursue (this.colonyOnSight);
 	}
 
 	private void HitEnemy() {
@@ -174,7 +168,7 @@ public class Move : MonoBehaviour
 			Monster monster = enemy.GetComponent<Monster> ();
 			monster.TakeDamage (gameObject);
 		} else {
-			enemyInFront = false;
+			enemyInAhead = false;
 
 		}
 	}
@@ -184,32 +178,11 @@ public class Move : MonoBehaviour
 			Wall wall = wallObj.GetComponent<Wall>();
 			wall.HitWall();
 		} else {
-			wallAhead = false;
+			obstacleAhead = false;
 		}
 	}
 
-	void PursueFood () {
-		Pursue(this.foodOnSight);
-	}
-
-	void PursueMonster () {
-		Pursue (this.enemyOnSight);
-	}
-
-
-	void GotoBase () {
-		Pursue (this.colonyOnSight);
-	}
-
-	void EvadeMonster () {
-		EvadeAgent();
-	}
-
-	void PursueObstacle () {
-		Pursue(this.obstacleOnSight);
-	}
-
-	void MoveRandomly (){
+	void MoveRandomly () {
 		int rand = Random.Range(1,1000);
 		if (rand <= 2) {
 			transform.Rotate (0f,-90f,0f);
@@ -220,21 +193,45 @@ public class Move : MonoBehaviour
 		}
 	}
 
+	void PickFood () {
+		this.foodAhead = false;
+		this.hasFood = true;
+	}
+	
+	void PursueFood (GameObject food) {
+		Pursue(food);
+	}
+
+	void PursueMonster () {
+		Pursue (this.enemyOnSight);
+	}
+	
+	void PursueObstacle () {
+		Pursue(this.obstacleOnSight);
+	}
+
+	void TryToDestroyEnemy () {
+		if (health > 10f) {
+			PursueMonster ();
+		} else {
+			EvadeMonster ();
+		}
+	}
+	
+
+	
+	/////////////////////////////////////////////////////////////////////////
+
 	/*
 	 * Auxiliar
 	 */
 
-	void OnTriggerEnter(Collider collider) {
-		if(collider.gameObject.tag == "PlayerA" || collider.gameObject.tag == "PlayerB") {
-			//Debug.Log ("Collision");
-			agentAhead = true;
-		}
-	}
-
-	void RunFromEnemy() {
-		enemy = null;
-		enemyInFront = false;
-		SendBack ();
+	void CleanSight () {
+		SetIsFoodOnSight (false, null);
+		SetIsEnemyOnSight (false, null);
+		SetIsObstacleOnSight (false, null);
+		SetIsColonyOnSight (false, null);
+		SetIsSpecFoodOnSight (false, null);
 	}
 
 	void MoveForward() {
@@ -250,11 +247,11 @@ public class Move : MonoBehaviour
 		}
 	}
 
-	void CleanSight () {
-		SetIsFoodOnSight (false, null);
-		SetIsEnemyOnSight (false, null);
-		SetIsObstacleOnSight (false, null);
-		SetIsColonyOnSight (false, null);
+	void OnTriggerEnter(Collider collider) {
+		if(collider.gameObject.tag == "PlayerA" || collider.gameObject.tag == "PlayerB") {
+			//Debug.Log ("Collision");
+			agentAhead = true;
+		}
 	}
 
 	void Pursue(GameObject target) {
@@ -266,14 +263,53 @@ public class Move : MonoBehaviour
 		MoveForward();
 	}
 
+	void RunFromEnemy() {
+		enemy = null;
+		enemyInAhead = false;
+		SendBack ();
+	}
+
+	////////////////////////////////////////////////////////////////////////
+
+
 	/*
 	 * Public (Being called outside Agent)
 	 */
+
+	
+	public void DecreaseLife (float lifeDecreased) {
+		health -= Time.deltaTime * lifeDecreased;
+		if (health <= 0) {
+			Debug.Log ("Agent Died");
+			if(HasFood()) {
+				this.food.GetComponent<PickUpable>().SetBeingCarried(false);
+			}
+			Object.Destroy(this.gameObject);
+		}
+	}
+
+
+	
+	public void EatFood (float healHealth) {
+		this.health += healHealth;
+	}
+
+	// FIXME: Do we need the public here?
+	public void SendBack () {
+		transform.Rotate (0f, 180f, 0f);
+		endOfWorld = false;
+		return;
+	}
 
 	// Setters
 	public void SetIsFoodOnSight (bool isFoodOnSight, GameObject foodOnSight) {
 		this.isFoodOnSight = isFoodOnSight;
 		this.foodOnSight = foodOnSight;
+	}
+
+	public void SetIsSpecFoodOnSight (bool isSpecFoodOnSight, GameObject specFoodOnSight) {
+		this.isSpecFoodOnSight = isSpecFoodOnSight;
+		this.specFoodOnSight = specFoodOnSight;
 	}
 
 	public void SetIsEnemyOnSight (bool isEnemyOnSight, GameObject enemyOnSight) {
@@ -296,13 +332,13 @@ public class Move : MonoBehaviour
 	}
 	
 	public void SetEnemyInFront(GameObject enemy) {
-		enemyInFront = true;
+		enemyInAhead = true;
 		this.enemy = enemy;
 	}
 	
 	// Box collider (mundo) chama esta funcao quando o agente sai
 	public void SetWallAhead(GameObject wall) {
-		wallAhead = true;
+		obstacleAhead = true;
 		this.wallObj = wall;
 	}
 
@@ -319,31 +355,15 @@ public class Move : MonoBehaviour
 	// Called by monsters
 	public void TakeDamage() {
 		Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
-		Color color = mat.color;
+		//Color color = mat.color;
 		mat.color = flashColour;
 		DecreaseLife (hitRate);
-		//health -= Time.deltaTime * hitRate;
+
 		Debug.Log ("Agent Hitpoints: " + health);
-		/*if (health <= 0) {
-			Debug.Log ("Agent Died");
-			if(HasFood()) {
-				this.food.GetComponent<PickUpable>().SetBeingCarried(false);
-			}
-			Object.Destroy(this.gameObject);
-		}*/
 		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
 	}
 
-	public void DecreaseLife (float lifeDecreased) {
-		health -= Time.deltaTime * lifeDecreased;
-		if (health <= 0) {
-			Debug.Log ("Agent Died");
-			if(HasFood()) {
-				this.food.GetComponent<PickUpable>().SetBeingCarried(false);
-			}
-			Object.Destroy(this.gameObject);
-		}
-	}
+
 
 
 }

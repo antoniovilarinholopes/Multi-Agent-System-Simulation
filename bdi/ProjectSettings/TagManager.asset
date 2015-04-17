@@ -12,6 +12,7 @@ TagManager:
   - Food
   - Monster
   - Boundary
+  - SpecFood
   layers:
   - Default
   - TransparentFX

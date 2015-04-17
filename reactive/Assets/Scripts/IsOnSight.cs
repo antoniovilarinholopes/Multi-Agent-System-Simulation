@@ -18,19 +18,22 @@ public class IsOnSight : MonoBehaviour {
 
 	bool IsObjectOnSight(Collider collider) {
 		RaycastHit hit;
-		Vector3 direction = collider.transform.position - transform.parent.position;
+		//Vector3 direction = collider.transform.position - transform.parent.position;
+		Vector3 direction = collider.transform.position - transform.position;
 		// ... and if a raycast towards the collider hits something...
-		if (Physics.Raycast (transform.parent.position, direction.normalized, out hit, 15f)) {
+		//if (Physics.Raycast (transform.parent.position + transform.parent.up, direction.normalized, out hit, 15f)) {
+		if (Physics.Raycast (transform.position + transform.up, direction.normalized, out hit, 15f)) {
+		
 			// ... and if the raycast hits the player...
-			if(collider.tag == "Food") {
-				Debug.Log ("Tag: " + hit.collider.gameObject.tag);
-			}
-
-			if(collider.tag == "Wall") {
+			//Debug.Log("Tag " + collider.tag);
+			//Debug.Log("Tag seen " + hit.collider.gameObject.tag);
+			/*if(collider.tag == "Wall") {
 				bool t = collider.gameObject == hit.collider.gameObject;
 				return hit.collider.gameObject.tag == collider.tag && collider.gameObject == hit.collider.gameObject;
 			}
-			return hit.collider.gameObject.tag == collider.tag;
+			return hit.collider.gameObject.tag == collider.tag;*/
+			Debug.Log(hit.collider.gameObject.name);
+			return collider.gameObject == hit.collider.gameObject;		
 		}
 		return false;
 	}
@@ -38,15 +41,24 @@ public class IsOnSight : MonoBehaviour {
 	void OnTriggerStay (Collider collider) {
 		if (collider.tag == "Food") {
 			//FIXME ugly as s**t
+			Debug.Log("Food on Sight1");
 			if (IsObjectOnSight (collider)) {
 				Debug.Log("Food on Sight");
 				myRobot.SetIsFoodOnSight (true, collider.gameObject);
 			} else {
 				myRobot.SetIsFoodOnSight (false, null);
 			}
+		} else if (collider.tag == "SpecFood") {
+			//FIXME ugly as s**t
+			if (IsObjectOnSight (collider)) {
+				Debug.Log("SpecFood on Sight");
+				myRobot.SetIsSpecFoodOnSight (true, collider.gameObject);
+			} else {
+				myRobot.SetIsSpecFoodOnSight (false, null);
+			}
 		} else if (collider.tag == "Monster") {
 			if (IsObjectOnSight (collider)) {
-				//Debug.Log("Monster on Sight");
+				Debug.Log("Monster on Sight");
 				myRobot.SetIsEnemyOnSight (true, collider.gameObject);
 			} else {
 				myRobot.SetIsEnemyOnSight (false, null);

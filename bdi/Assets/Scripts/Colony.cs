@@ -8,10 +8,9 @@ public class Colony : MonoBehaviour {
 	IList<GameObject> individuals;
 	float foodCount;
 	const float foodMultiplier = 5f;
+	const float specialFoodMultiplier = 10f;
 	const float timeToRemoveHealth = 10f;
-	float lastTime;
 	string colonyLetter;
-	//public int pointsPerFood;
 
 	void Awake () {
 		individuals = new List<GameObject>();
@@ -54,20 +53,9 @@ public class Colony : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		foodCount = 0;
-		lastTime = Time.time;
 	}
 
 	void Update () {
-		/*float timeElapsed = Time.time - lastTime;
-		if (timeElapsed >= timeToRemoveHealth) {
-			lastTime = Time.time;
-			foreach(GameObject ind in individuals) {
-				Move indComponent = ind.GetComponent<Move> ();
-				if(indComponent != null) {
-					indComponent.DecreaseLife(2f);
-				}
-			}
-		}*/
 		IList<GameObject> individualsAtBase = new List<GameObject>();
 		foreach (GameObject ind in individuals) {
 			if (ind == null) {
@@ -92,8 +80,13 @@ public class Colony : MonoBehaviour {
 		//each food heals 5 health
 	}
 
-	public void IncreaseFood () {
-		foodCount += 1*foodMultiplier;
+	public void IncreaseFood (string food_tag) {
+		if (food_tag == "Food") {
+			foodCount += 1*foodMultiplier;
+		} else {
+			foodCount += 1*specialFoodMultiplier;
+		}
+		//foodCount += 1*foodMultiplier;
 		Debug.Log ("Score: " + foodCount);
 		if(colonyLetter == "A") {
 			Text text = GameObject.Find("PointsA").GetComponent<Text>();
