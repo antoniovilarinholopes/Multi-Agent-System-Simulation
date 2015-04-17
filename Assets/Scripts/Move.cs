@@ -2,51 +2,78 @@
 using System.Collections;
 
 public class Move : MonoBehaviour
-{
-	private bool canMove = false;
-	
-	void FixedUpdate() {
-		//if (canMove) {
-		int rand = Random.Range(1,1000);
-		if (rand <= 2) {
-			transform.Rotate (0f,-90f,0f);
-			//transform.rotation = Quaternion.AngleAxis(-90,Vector3.up);
-		} else if(rand <= 4) {
-			transform.Rotate (0f,90f,0f);
-			//transform.rotation = Quaternion.AngleAxis(90,Vector3.up);
-		} else {
-			transform.Translate (Vector3.forward * Time.deltaTime, Space.Self);
-		}//}
+{	
+	bool endOfWorld, foodAhead, obstacle, enemy, hasFood, atBase;
+
+	void Start() {
+		endOfWorld = false;
+		foodAhead = false;
+		obstacle = false;
+		enemy = false;
+		hasFood = false;
+		atBase = false;
 	}
 
+	void Update() {
+		if (EndOfWorld ()) {
+			SendBack ();
+		} else if (FoodAhead () && !HasFood ()) {
+			PickFood ();
+		} else if (AtBase () && HasFood ()) {
+			DropFood ();
+		} else {
+			MoveRandomly ();
+		}
+	}
+
+	bool EndOfWorld() {
+		return endOfWorld;
+	}
+
+	public void SetEndOfWorld() {
+		endOfWorld = true;
+	}
+
+	// Box collider (mundo) chama esta funcao quando o agente sai
 	public void SendBack() {
 		transform.Rotate (0f, 180f, 0f);
+		endOfWorld = false;
 		return;
 	}
 
-	void MakeItMove() {
-		canMove = true;
+	bool FoodAhead (){
+		return foodAhead;
 	}
 
-	void MakeItStop() {
-		canMove = false;
+	bool HasFood ()	{
+		return hasFood;
 	}
 
-	//sensor objecto a frente
-	/*
-	void OnTriggerEnter(Collider collider) {
-		//change direction
-		if (collider.tag == "Wall") {
-			transform.Rotate (0f,180f,0f);
-		} 
-	}*/
-	/*
-	void OnTriggerEnter (Collider collider) {
-		if (collider.gameObject.tag == "Food") {
-			return;
-		} else if (collider.tag == "Obsticule") {
+	bool AtBase (){
+		return atBase;
+	}
+
+	void PickFood (){
+		return;
+	}
+
+	void DropFood (){
+		return;
+	}
+
+	void MoveRandomly (){
+		int rand = Random.Range(1,1000);
+		if (rand <= 2) {
+			transform.Rotate (0f,-90f,0f);
+		} else if(rand <= 4) {
+			transform.Rotate (0f,90f,0f);
+		} else {
+			MoveForward();
 		}
-	}*/
+	}
 
+	void MoveForward() {
+		transform.Translate (Vector3.forward * Time.deltaTime, Space.Self);
+	}
 }
 
