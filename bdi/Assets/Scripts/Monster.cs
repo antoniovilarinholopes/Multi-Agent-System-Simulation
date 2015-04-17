@@ -42,7 +42,7 @@ public class Monster : MonoBehaviour {
 
 	public void TakeDamage(GameObject ind) {
 		Material mat = this.gameObject.transform.GetChild(0).GetChild(1).GetComponent<Renderer> ().material;
-		Color color = mat.color;
+		//Color color = mat.color;
 		mat.color = flashColour;
 		transform.LookAt (ind.transform.position);
 		hitPoints -= Time.deltaTime * hitRate;

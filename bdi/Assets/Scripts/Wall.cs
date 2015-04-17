@@ -32,7 +32,7 @@ public class Wall : MonoBehaviour {
 		//damageImage.color = flashColour;
 		//damaged = true;
 		Material mat = GetComponent<Renderer> ().material;
-		Color color = mat.color;
+		//Color color = mat.color;
 		mat.color = flashColour;
 		hitPoints -= Time.deltaTime * hitRate;
 		if (hitPoints <= 0) {

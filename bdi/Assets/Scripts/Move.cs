@@ -1,5 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+
+
+public enum Desires {GET_FOOD,ATTACK, BREAK_OBS}
+public enum Intentions {HELP_COLONY, HELP_SELF}
+
 
 public class Move : MonoBehaviour
 {	
@@ -15,7 +21,10 @@ public class Move : MonoBehaviour
 	private float health = 20f;
 	private float hitRate = 2f;
 	private const float SPEED = 10f;
-	
+	IList<Desires> myDesires;
+	IList<Intentions> myIntentions;
+	Dictionary<Vector3, GameObject> myBeliefs;
+
 	void Start() {
 		endOfWorld = false;
 		foodAhead = false;
@@ -29,6 +38,15 @@ public class Move : MonoBehaviour
 		isObstacleOnSight = false;
 		isSpecFoodOnSight = false;
 		myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
+
+		myDesires = new List<Desires> ();
+		//append Desires
+		myIntentions = new List<Intentions> ();
+		//append Intentions
+
+		//Beliefs empty?
+		myBeliefs = new Dictionary<Vector3,GameObject> ();
+
 	}
 
 	/*
@@ -41,6 +59,21 @@ public class Move : MonoBehaviour
 		// Value can be a public variable
 		DecreaseLife(0.5f);
 
+
+		//FIXME
+		//p <- nextPercetp = what is seeing
+		//pseudo only, obvious that they will be updated with passage by ref
+		//myBeliefs = Brf (myBeliefs, p);
+		//myDesires = Options (myBeliefs, myIntentions);
+		//myIntentions = Filter (myBeliefs, myDesires, myIntentions);
+		//pi = Plan (myBeliefs, myDesires, myIntentions);
+		//execute (pi);
+
+
+
+
+		/*
+		 * 
 		if (EndOfWorld ()) {
 			SendBack ();
 		} else if (AgentAhead ()) {
@@ -67,8 +100,7 @@ public class Move : MonoBehaviour
 			PursueObstacle ();
 		} else {
 			MoveRandomly ();
-		}
-		CleanSight ();
+		}*/
 	}
 
 	/*
