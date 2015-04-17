@@ -66,6 +66,21 @@ public class Colony : MonoBehaviour {
 				indComponent.DecreaseLife(2f);
 			}
 		}
+		IList<GameObject> individualsAtBase = new List<GameObject>();
+		foreach (GameObject ind in individuals) {
+			Move indComponent = ind.GetComponent<Move> ();
+			if(indComponent.AtBase()) {
+				individualsAtBase.Add(ind);
+			}
+		}
+		if (foodCount > 0) { 
+			foreach (GameObject ind in individualsAtBase) {
+				Move indComponent = ind.GetComponent<Move> ();
+				if (indComponent.HasLowLife () && foodCount > 0) {
+					indComponent.EatFood(5f);
+				}
+			}
+		}
 		//each food heals 5 health
 	}
 
@@ -81,6 +96,7 @@ public class Colony : MonoBehaviour {
 		}
 	}
 
+
 	void OnTriggerExit (Collider collider) {
 		if(collider.gameObject.tag.StartsWith("Player") && collider.gameObject.tag.Substring(6) == colonyLetter) {
 			Move move = collider.GetComponent<Move>();
@@ -95,4 +111,5 @@ public class Colony : MonoBehaviour {
 			move.SetAtBase(true, gameObject);
 		}
 	}
+
 }

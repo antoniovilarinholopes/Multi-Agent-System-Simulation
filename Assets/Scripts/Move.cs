@@ -69,7 +69,7 @@ public class Move : MonoBehaviour
 	 * Sensors
 	 */
 
-	bool HasLowLife () {
+	public bool HasLowLife () {
 		return health <= 5;
 	}
 
@@ -89,7 +89,7 @@ public class Move : MonoBehaviour
 		return hasFood;
 	}
 
-	bool AtBase () {
+	public bool AtBase () {
 		return atBase;
 	}
 
@@ -128,7 +128,7 @@ public class Move : MonoBehaviour
 	}
 
 
-	void EatFood (float healHealth) {
+	public void EatFood (float healHealth) {
 		this.health += healHealth;
 	}
 
