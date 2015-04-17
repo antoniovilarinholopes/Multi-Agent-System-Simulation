@@ -4,6 +4,8 @@ using System.Collections;
 public class Move : MonoBehaviour
 {	
 	bool endOfWorld, foodAhead, obstacle, enemy, hasFood, atBase;
+	GameObject food;
+	public float distance, smooth;
 
 	void Start() {
 		endOfWorld = false;
@@ -49,12 +51,18 @@ public class Move : MonoBehaviour
 		return hasFood;
 	}
 
+	public void SetFood(GameObject food) {
+		this.food = food;
+		this.foodAhead = true;
+	}
+
 	bool AtBase (){
 		return atBase;
 	}
 
 	void PickFood (){
-		return;
+		this.foodAhead = false;
+		this.hasFood = true;
 	}
 
 	void DropFood (){
@@ -74,6 +82,15 @@ public class Move : MonoBehaviour
 
 	void MoveForward() {
 		transform.Translate (Vector3.forward * Time.deltaTime, Space.Self);
+
+		if(HasFood()) {
+			Vector3 currentPosition = food.transform.position;
+			Vector3 newPosition = transform.position +
+				transform.TransformDirection(Vector3.forward) * distance;
+
+			this.food.transform.position = 
+				Vector3.Lerp (currentPosition, newPosition, Time.deltaTime*smooth);
+		}
 	}
 }
 
