@@ -27,7 +27,7 @@ public class Move : MonoBehaviour
 		} else if (EnemyAhead ()){
 			//for now send back 
 			RunFromEnemy ();
-		}else {
+		} else {
 			MoveRandomly ();
 		}
 	}

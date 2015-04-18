@@ -25,10 +25,5 @@ public class MoveWithMouse : MonoBehaviour {
 		Vector3 move = new Vector3(-pos.x * dragSpeed, 0, -pos.y * dragSpeed);
 		
 		transform.Translate(move, Space.World);
-		/*transform.position += 
-			new Vector3(
-				Input.GetAxisRaw("Mouse X") * Time.deltaTime * cameraSpeed,
-				0f,
-				Input.GetAxisRaw("Mouse Y") * Time.deltaTime * cameraSpeed);*/
 	}
 }

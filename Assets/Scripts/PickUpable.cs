@@ -2,10 +2,11 @@
 using System.Collections;
 
 public class PickUpable : MonoBehaviour {
+	bool beingCarried;
 
 	// Use this for initialization
 	void Start () {
-	
+		beingCarried = false;
 	}
 	
 	// Update is called once per frame
@@ -15,7 +16,8 @@ public class PickUpable : MonoBehaviour {
 
 	void OnTriggerEnter(Collider collider) {
 		Move move = collider.GetComponent<Move>();
-		if(move != null) {
+		if(move != null && !beingCarried) {
+			beingCarried = true;
 			move.SetFood(gameObject);
 		}
 	}
