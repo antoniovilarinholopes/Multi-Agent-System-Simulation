@@ -28,13 +28,21 @@ public class Move : MonoBehaviour
 			//for now send back 
 			RunFromEnemy ();
 		} else if (WallAhead()) {
-			Wall wall = wallObj.GetComponent<Wall>();
-			wall.HitWall();
+			HitWall();
 		} else {
 			MoveRandomly ();
 		}
 	}
 
+	private void HitWall() {
+		if(wallObj != null) {
+			Wall wall = wallObj.GetComponent<Wall>();
+			wall.HitWall();
+		} else {
+			wallAhead = false;
+		}
+	}
+	
 	void RunFromEnemy() {
 		enemy = null;
 		enemyInFront = false;

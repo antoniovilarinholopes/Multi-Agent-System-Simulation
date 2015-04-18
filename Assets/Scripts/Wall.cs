@@ -25,6 +25,9 @@ public class Wall : MonoBehaviour {
 
 	public void HitWall() {
 		hitPoints -= Time.deltaTime * hitRate;
+		if (hitPoints <= 0) {
+			Object.Destroy(this.gameObject);
+		}
 		Debug.Log("Hitpoints: " + hitPoints);
 	}
 }
