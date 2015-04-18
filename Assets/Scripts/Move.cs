@@ -3,8 +3,8 @@ using System.Collections;
 
 public class Move : MonoBehaviour
 {	
-	bool endOfWorld, foodAhead, obstacle, enemyInFront, hasFood, atBase;
-	GameObject food, enemy;
+	bool endOfWorld, foodAhead, obstacle, enemyInFront, hasFood, atBase, wallAhead;
+	GameObject food, enemy, wallObj;
 	public float distance, smooth;
 
 	void Start() {
@@ -27,6 +27,9 @@ public class Move : MonoBehaviour
 		} else if (EnemyAhead ()){
 			//for now send back 
 			RunFromEnemy ();
+		} else if (WallAhead()) {
+			Wall wall = wallObj.GetComponent<Wall>();
+			wall.HitWall();
 		} else {
 			MoveRandomly ();
 		}
@@ -46,6 +49,10 @@ public class Move : MonoBehaviour
 		return endOfWorld;
 	}
 
+	bool WallAhead() {
+		return wallAhead;
+	}
+
 	public void SetEndOfWorld() {
 		endOfWorld = true;
 	}
@@ -60,6 +67,11 @@ public class Move : MonoBehaviour
 		transform.Rotate (0f, 180f, 0f);
 		endOfWorld = false;
 		return;
+	}
+
+	public void SetWallAhead(GameObject wall) {
+		wallAhead = true;
+		this.wallObj = wall;
 	}
 
 	bool FoodAhead (){
