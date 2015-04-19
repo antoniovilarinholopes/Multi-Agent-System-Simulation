@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class Colony : MonoBehaviour {
 	
@@ -61,6 +62,11 @@ public class Colony : MonoBehaviour {
 	public void IncreaseScore() {
 		score += pointsPerFood;
 		Debug.Log ("Score: " + score);
+		if(colonyLetter == "A") {
+		Text text = GameObject.Find("PointsA").GetComponent<Text>();
+		text.text = "" + score;
+		}
+
 	}
 
 	void OnTriggerExit(Collider collider) {
