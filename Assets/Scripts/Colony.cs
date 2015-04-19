@@ -5,6 +5,9 @@ public class Colony : MonoBehaviour {
 	
 	public GameObject prefabInd;
 	IList<GameObject> individuals;
+	int score;
+	string colonyLetter;
+	public int pointsPerFood;
 
 	void Awake() {
 		individuals = new List<GameObject>();
@@ -19,9 +22,11 @@ public class Colony : MonoBehaviour {
 		if(gameObject.tag == "ColA") {
 			individualColor = Color.blue;
 			playerTag = "PlayerA";
+			colonyLetter = "A";
 		} else {
 			individualColor = Color.red;
 			playerTag = "PlayerB";
+			colonyLetter = "B";
 		}
 		for(int i = 0; i < 4; i++) {
 			maxAttempts = 0;
@@ -44,11 +49,32 @@ public class Colony : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		score = 0;
 	
 	}
 	
 	// Update is called once per frame
 	void Update () {
 	
+	}
+
+	public void IncreaseScore() {
+		score += pointsPerFood;
+		Debug.Log ("Score: " + score);
+	}
+
+	void OnTriggerExit(Collider collider) {
+		if(collider.gameObject.tag.StartsWith("Player") || collider.gameObject.tag.Substring(6) == colonyLetter) {
+			Move move = collider.GetComponent<Move>();
+			move.SetAtBase(false, null);
+		}
+	}
+
+	void OnTriggerEnter(Collider collider) {
+		//Debug.Log ("Enter " + collider.gameObject.tag.Substring(6));
+		if(collider.gameObject.tag.StartsWith("Player") || collider.gameObject.tag.Substring(6) == colonyLetter) {
+			Move move = collider.GetComponent<Move>();
+			move.SetAtBase(true, gameObject);
+		}
 	}
 }

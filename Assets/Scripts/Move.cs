@@ -4,7 +4,7 @@ using System.Collections;
 public class Move : MonoBehaviour
 {	
 	bool endOfWorld, foodAhead, obstacle, enemyInFront, hasFood, atBase, wallAhead, agentAhead;
-	GameObject food, enemy, wallObj;
+	GameObject food, enemy, wallObj, colony;
 	public float distance, smooth;
 	private float hitPoints = 20f;
 	private float hitRate = 2f;
@@ -46,7 +46,7 @@ public class Move : MonoBehaviour
 
 	void OnTriggerEnter(Collider collider) {
 		if(collider.gameObject.tag == "PlayerA" || collider.gameObject.tag == "PlayerB") {
-			Debug.Log ("Collision");
+			//Debug.Log ("Collision");
 			agentAhead = true;
 		}
 	}
@@ -144,12 +144,6 @@ public class Move : MonoBehaviour
 		this.hasFood = true;
 	}
 
-	void DropFood (){
-		this.food = null;
-		this.hasFood = false;
-		return;
-	}
-
 	void MoveRandomly (){
 		int rand = Random.Range(1,1000);
 		if (rand <= 2) {
@@ -182,6 +176,20 @@ public class Move : MonoBehaviour
 			transform.Rotate (0f,90f,0f);
 		}
 		agentAhead = false;
+	}
+
+	void DropFood() {
+		hasFood = false;
+		Destroy(food);
+		Colony colony = colony.GetComponent<Colony>();
+		if(colony != null) {
+			colony.IncreaseScore();
+		}
+	}
+
+	public void SetAtBase (bool atBase, GameObject colony)	{
+		this.atBase = atBase;
+		this.colony = colony;
 	}
 }
 
