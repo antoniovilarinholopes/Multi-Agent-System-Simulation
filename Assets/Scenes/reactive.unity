@@ -200,7 +200,7 @@ Transform:
   m_LocalScale: {x: 15, y: 1, z: 30}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 4
 --- !u!1 &253868387
 GameObject:
   m_ObjectHideFlags: 0
@@ -531,7 +531,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7b02f8b7c1c41d46bceeb9844143818, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefabInd: {fileID: 147306, guid: 684d748694847af4483c3cc83a085542, type: 2}
+  prefabInd: {fileID: 167168, guid: 684d748694847af4483c3cc83a085542, type: 2}
 --- !u!1 &813952813
 GameObject:
   m_ObjectHideFlags: 0
@@ -1018,7 +1018,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7b02f8b7c1c41d46bceeb9844143818, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefabInd: {fileID: 147306, guid: 684d748694847af4483c3cc83a085542, type: 2}
+  prefabInd: {fileID: 167168, guid: 684d748694847af4483c3cc83a085542, type: 2}
 --- !u!65 &1623446773
 BoxCollider:
   m_ObjectHideFlags: 0
