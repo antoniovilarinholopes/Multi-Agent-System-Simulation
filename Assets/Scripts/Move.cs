@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Move : MonoBehaviour
 {	
-	bool endOfWorld, foodAhead, obstacle, enemyInFront, hasFood, atBase, wallAhead;
+	bool endOfWorld, foodAhead, obstacle, enemyInFront, hasFood, atBase, wallAhead, agentAhead;
 	GameObject food, enemy, wallObj;
 	public float distance, smooth;
 
@@ -15,11 +15,19 @@ public class Move : MonoBehaviour
 		hasFood = false;
 		atBase = false;
 		enemyInFront = false;
+		agentAhead = false;
 	}
 
+	/*
+	 * Agent main loop
+	 * Purely reactive Agent
+	 * Function inside if's are sensors and the if's body has effectors
+	 */
 	void Update() {
 		if (EndOfWorld ()) {
 			SendBack ();
+		} else if (AgentAhead()) {
+			EvadeAgent();
 		} else if (FoodAhead () && !HasFood ()) {
 			PickFood ();
 		} else if (AtBase () && HasFood ()) {
@@ -31,6 +39,13 @@ public class Move : MonoBehaviour
 			HitWall();
 		} else {
 			MoveRandomly ();
+		}
+	}
+
+	void OnTriggerEnter(Collider collider) {
+		if(collider.gameObject.tag == "PlayerA" || collider.gameObject.tag == "PlayerB") {
+			Debug.Log ("Collision");
+			agentAhead = true;
 		}
 	}
 
@@ -47,7 +62,12 @@ public class Move : MonoBehaviour
 		enemy = null;
 		enemyInFront = false;
 		SendBack ();
-		MoveForward ();
+		//MoveForward ();
+	}
+
+	bool AgentAhead ()
+	{
+		return agentAhead;
 	}
 
 	bool EnemyAhead() {
@@ -106,6 +126,7 @@ public class Move : MonoBehaviour
 
 	void DropFood (){
 		this.food = null;
+		this.hasFood = false;
 		return;
 	}
 
@@ -122,7 +143,7 @@ public class Move : MonoBehaviour
 
 	void MoveForward() {
 		transform.Translate (Vector3.forward * Time.deltaTime, Space.Self);
-
+		// Move food along with him
 		if(HasFood()) {
 			Vector3 currentPosition = food.transform.position;
 			Vector3 newPosition = transform.position +
@@ -131,6 +152,16 @@ public class Move : MonoBehaviour
 			this.food.transform.position = 
 				Vector3.Lerp (currentPosition, newPosition, Time.deltaTime*smooth);
 		}
+	}
+
+	void EvadeAgent () {
+		int rand = Random.Range(1, 4);
+		if (rand <= 2) {
+			transform.Rotate (0f,-90f,0f);
+		} else {
+			transform.Rotate (0f,90f,0f);
+		}
+		agentAhead = false;
 	}
 }
 

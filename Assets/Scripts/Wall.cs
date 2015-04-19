@@ -28,6 +28,6 @@ public class Wall : MonoBehaviour {
 		if (hitPoints <= 0) {
 			Object.Destroy(this.gameObject);
 		}
-		Debug.Log("Hitpoints: " + hitPoints);
+		//Debug.Log("Hitpoints: " + hitPoints);
 	}
 }

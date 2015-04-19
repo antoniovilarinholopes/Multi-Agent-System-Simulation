@@ -8,6 +8,8 @@ TagManager:
   - Indv
   - ColA
   - ColB
+  - PlayerA
+  - PlayerB
   layers:
   - Default
   - TransparentFX

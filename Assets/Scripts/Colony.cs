@@ -15,10 +15,13 @@ public class Colony : MonoBehaviour {
 		int maxAttempts;
 		bool clearSpace;
 		Color individualColor;
+		string playerTag;
 		if(gameObject.tag == "ColA") {
 			individualColor = Color.blue;
+			playerTag = "PlayerA";
 		} else {
 			individualColor = Color.red;
+			playerTag = "PlayerB";
 		}
 		for(int i = 0; i < 4; i++) {
 			maxAttempts = 0;
@@ -32,7 +35,8 @@ public class Colony : MonoBehaviour {
 			individual = Instantiate(prefabInd, position, Quaternion.identity) as GameObject;
 			rotation = Random.Range(0, 4) * 90;
 			individual.transform.Rotate(0f, rotation, 0f);
-			individual.tag = this.gameObject.tag;
+			individual.tag = playerTag;
+			// Muda a cor do Robot2
 			individual.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color = individualColor;
 			individuals.Add (individual);
 		}
