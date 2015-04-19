@@ -8,6 +8,7 @@ public class Move : MonoBehaviour
 	public float distance, smooth;
 	private float hitPoints = 20f;
 	private float hitRate = 2f;
+	private const float SPEED = 3f;
 	
 	void Start() {
 		endOfWorld = false;
@@ -161,7 +162,7 @@ public class Move : MonoBehaviour
 	}
 
 	void MoveForward() {
-		transform.Translate (Vector3.forward * Time.deltaTime, Space.Self);
+		transform.Translate (Vector3.forward * Time.deltaTime * SPEED, Space.Self);
 		// Move food along with him
 		if(HasFood()) {
 			Vector3 currentPosition = food.transform.position;
