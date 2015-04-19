@@ -181,9 +181,9 @@ public class Move : MonoBehaviour
 	void DropFood() {
 		hasFood = false;
 		Destroy(food);
-		Colony colony = colony.GetComponent<Colony>();
-		if(colony != null) {
-			colony.IncreaseScore();
+		Colony colonyComp = colony.GetComponent<Colony>();
+		if(colonyComp != null) {
+			colonyComp.IncreaseScore();
 		}
 	}
 
