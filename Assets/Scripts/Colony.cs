@@ -63,8 +63,11 @@ public class Colony : MonoBehaviour {
 		score += pointsPerFood;
 		Debug.Log ("Score: " + score);
 		if(colonyLetter == "A") {
-		Text text = GameObject.Find("PointsA").GetComponent<Text>();
-		text.text = "" + score;
+			Text text = GameObject.Find("PointsA").GetComponent<Text>();
+			text.text = "" + score;
+		} else {
+			Text text = GameObject.Find("PointsB").GetComponent<Text>();
+			text.text = "" + score;
 		}
 
 	}
