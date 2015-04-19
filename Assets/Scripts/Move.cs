@@ -5,8 +5,8 @@ public class Move : MonoBehaviour
 {	
 	bool endOfWorld, foodAhead, obstacle, enemyInFront, hasFood, atBase, wallAhead, agentAhead;
 	GameObject food, enemy, wallObj;
-	public float distance, smooth;
-
+	public float distance, smooth, hitPoints, hitRate;
+	
 	void Start() {
 		endOfWorld = false;
 		foodAhead = false;
@@ -33,8 +33,7 @@ public class Move : MonoBehaviour
 		} else if (AtBase () && HasFood ()) {
 			DropFood ();
 		} else if (EnemyAhead ()){
-			//for now send back 
-			RunFromEnemy ();
+			HitEnemy();
 		} else if (WallAhead()) {
 			HitWall();
 		} else {
@@ -55,6 +54,24 @@ public class Move : MonoBehaviour
 			wall.HitWall();
 		} else {
 			wallAhead = false;
+		}
+	}
+
+	private void HitEnemy() {
+		if (enemy != null) {
+			Monster monster = enemy.GetComponent<Monster> ();
+			monster.TakeDamage (gameObject);
+		} else {
+			enemyInFront = false;
+		}
+	}
+
+	public void TakeDamage() {
+		hitPoints -= Time.deltaTime * hitRate;
+		Debug.Log ("Agent Hitpoints: " + hitPoints);
+		if (hitPoints <= 0) {
+			Debug.Log ("Agent Died");
+			Object.Destroy(this.gameObject);
 		}
 	}
 	
