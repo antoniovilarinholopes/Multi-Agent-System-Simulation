@@ -5,7 +5,8 @@ public class Monster : MonoBehaviour {
 
 	private bool agentAhead;
 	private GameObject agent;
-	public float hitPoints, hitRate;
+	private float hitPoints = 12f;
+	private float hitRate = 2f;
 
 	// Use this for initialization
 	void Start () {

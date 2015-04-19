@@ -5,7 +5,9 @@ public class Move : MonoBehaviour
 {	
 	bool endOfWorld, foodAhead, obstacle, enemyInFront, hasFood, atBase, wallAhead, agentAhead;
 	GameObject food, enemy, wallObj;
-	public float distance, smooth, hitPoints, hitRate;
+	public float distance, smooth;
+	private float hitPoints = 20f;
+	private float hitRate = 2f;
 	
 	void Start() {
 		endOfWorld = false;
