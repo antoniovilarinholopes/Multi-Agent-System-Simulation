@@ -74,6 +74,9 @@ public class Move : MonoBehaviour
 		Debug.Log ("Agent Hitpoints: " + hitPoints);
 		if (hitPoints <= 0) {
 			Debug.Log ("Agent Died");
+			if(HasFood()) {
+				this.food.GetComponent<PickUpable>().SetBeignCarried(false);
+			}
 			Object.Destroy(this.gameObject);
 		}
 	}

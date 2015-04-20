@@ -51,12 +51,6 @@ public class Colony : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		score = 0;
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
 	}
 
 	public void IncreaseScore() {
@@ -69,7 +63,6 @@ public class Colony : MonoBehaviour {
 			Text text = GameObject.Find("PointsB").GetComponent<Text>();
 			text.text = "" + score;
 		}
-
 	}
 
 	void OnTriggerExit(Collider collider) {

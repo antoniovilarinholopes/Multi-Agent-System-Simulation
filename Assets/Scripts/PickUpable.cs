@@ -21,4 +21,8 @@ public class PickUpable : MonoBehaviour {
 			move.SetFood(gameObject);
 		}
 	}
+
+	public void SetBeignCarried(bool carried) {
+		this.beingCarried = carried;
+	}
 }
