@@ -9,18 +9,16 @@ public class IsOnSight : MonoBehaviour {
 	void Start () {
 		myRobot = this.transform.parent.GetComponent<Move>();
 	}
-/*
-	void OnTriggerEnter (Collider collider) {
-		
-	}
-*/
 
 	bool IsObjectOnSight(Collider collider) {
 		RaycastHit hit;
-		Vector3 direction = collider.transform.position - transform.position;
+		Vector3 direction = collider.transform.position - transform.parent.position;
 		// ... and if a raycast towards the collider hits something...
-		if (Physics.Raycast (transform.position, direction.normalized, out hit)) {
+		if (Physics.Raycast (transform.parent.position, direction.normalized, out hit, 15f)) {
 			// ... and if the raycast hits the player...
+			if(collider.tag == "Food") {
+				Debug.Log ("Tag: " + hit.collider.gameObject.tag);
+			}
 			return hit.collider.gameObject.tag == collider.tag;
 		}
 		return false;
@@ -29,6 +27,7 @@ public class IsOnSight : MonoBehaviour {
 	void OnTriggerStay (Collider collider) {
 		if (collider.tag == "Food") {
 			//FIXME ugly as s**t
+			//Debug.Log("Is on Sight: " + IsObjectOnSight(collider));
 			if (IsObjectOnSight (collider)) {
 				myRobot.SetIsFoodOnSight (true, collider.gameObject);
 			} else {
@@ -59,13 +58,4 @@ public class IsOnSight : MonoBehaviour {
 			}
 		} 
 	}
-/*
-	void OnTriggerExit (Collider collider) {
-	}
-
-	// Update is called once per frame
-	void Update () {
-	
-	}
-	*/
 }

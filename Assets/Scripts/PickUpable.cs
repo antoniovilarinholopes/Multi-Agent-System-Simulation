@@ -8,11 +8,6 @@ public class PickUpable : MonoBehaviour {
 	void Start () {
 		beingCarried = false;
 	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
 
 	void OnTriggerEnter(Collider collider) {
 		Move move = collider.GetComponent<Move>();
@@ -22,7 +17,7 @@ public class PickUpable : MonoBehaviour {
 		}
 	}
 
-	public void SetBeignCarried(bool carried) {
+	public void SetBeingCarried(bool carried) {
 		this.beingCarried = carried;
 	}
 }

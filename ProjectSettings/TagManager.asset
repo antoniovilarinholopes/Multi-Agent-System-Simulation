@@ -11,6 +11,7 @@ TagManager:
   - PlayerB
   - Food
   - Monster
+  - Boundary
   layers:
   - Default
   - TransparentFX
