@@ -58,23 +58,31 @@ public class Colony : MonoBehaviour {
 	}
 
 	void Update () {
-		float timeElapsed = Time.time - lastTime;
+		/*float timeElapsed = Time.time - lastTime;
 		if (timeElapsed >= timeToRemoveHealth) {
 			lastTime = Time.time;
 			foreach(GameObject ind in individuals) {
 				Move indComponent = ind.GetComponent<Move> ();
-				indComponent.DecreaseLife(2f);
+				if(indComponent != null) {
+					indComponent.DecreaseLife(2f);
+				}
 			}
-		}
+		}*/
 		IList<GameObject> individualsAtBase = new List<GameObject>();
 		foreach (GameObject ind in individuals) {
-			Move indComponent = ind.GetComponent<Move> ();
-			if(indComponent.AtBase()) {
-				individualsAtBase.Add(ind);
+			if (ind == null) {
+				continue;
 			}
+			Move indComponent = ind.GetComponent<Move> ();
+				if(indComponent.AtBase()) {
+					individualsAtBase.Add(ind);
+				}
 		}
 		if (foodCount > 0) { 
 			foreach (GameObject ind in individualsAtBase) {
+				if (ind == null) {
+					continue;
+				}
 				Move indComponent = ind.GetComponent<Move> ();
 				if (indComponent.HasLowLife () && foodCount > 0) {
 					indComponent.EatFood(5f);

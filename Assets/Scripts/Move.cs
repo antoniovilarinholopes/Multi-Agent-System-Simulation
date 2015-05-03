@@ -36,6 +36,10 @@ public class Move : MonoBehaviour
 	 * Function inside if's are sensors and the if's body has effectors
 	 */
 	void Update() {
+		// Decreases Agent life over time
+		// Value can be a public variable
+		DecreaseLife(0.5f);
+
 		if (EndOfWorld ()) {
 			SendBack ();
 		} else if (AgentAhead ()) {
@@ -329,7 +333,15 @@ public class Move : MonoBehaviour
 	}
 
 	public void DecreaseLife (float lifeDecreased) {
-		Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
+		health -= Time.deltaTime * lifeDecreased;
+		if (health <= 0) {
+			Debug.Log ("Agent Died");
+			if(HasFood()) {
+				this.food.GetComponent<PickUpable>().SetBeingCarried(false);
+			}
+			Object.Destroy(this.gameObject);
+		}
+		/*Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
 		Color color = mat.color;
 		mat.color = flashColour;
 		//life -= Time.deltaTime * lifeDecreased;
@@ -342,7 +354,7 @@ public class Move : MonoBehaviour
 			}
 			Object.Destroy(this.gameObject);
 		}
-		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
+		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);*/
 	}
 
 
