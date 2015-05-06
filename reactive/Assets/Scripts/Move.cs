@@ -257,6 +257,7 @@ public class Move : MonoBehaviour
 	void Pursue(GameObject target) {
 		//pursuing = true;
 		Vector3 targetDir = target.transform.position - transform.position;
+		targetDir.y = 0;
 		float step  = smooth * Time.deltaTime;
 		Vector3 newDir = Vector3.RotateTowards(transform.forward, targetDir, step, 0.0f);
 		transform.rotation = Quaternion.LookRotation(newDir);

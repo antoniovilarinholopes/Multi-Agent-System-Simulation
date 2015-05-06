@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 
 
-public enum Desires {GET_FOOD,ATTACK, BREAK_OBS}
-public enum Intentions {HELP_COLONY, HELP_SELF}
+public enum Desires {GET_FOOD, GET_FOOD_SELF, ATTACK, BREAK_OBS, HELP_COLONY, HELP_SELF, HELP_OTHERS}
+public enum Intentions {}
 
 
 public class Move : MonoBehaviour
@@ -23,7 +23,7 @@ public class Move : MonoBehaviour
 	private const float SPEED = 10f;
 	IList<Desires> myDesires;
 	IList<Intentions> myIntentions;
-	Dictionary<Vector3, GameObject> myBeliefs;
+	Dictionary<Vector3, string> myBeliefs;
 
 	void Start() {
 		endOfWorld = false;
@@ -45,7 +45,7 @@ public class Move : MonoBehaviour
 		//append Intentions
 
 		//Beliefs empty?
-		myBeliefs = new Dictionary<Vector3,GameObject> ();
+		myBeliefs = new Dictionary<Vector3,string> ();
 
 	}
 
@@ -63,10 +63,10 @@ public class Move : MonoBehaviour
 		//FIXME
 		//p <- nextPercetp = what is seeing
 		//pseudo only, obvious that they will be updated with passage by ref
-		//myBeliefs = Brf (myBeliefs, p);
-		//myDesires = Options (myBeliefs, myIntentions);
-		//myIntentions = Filter (myBeliefs, myDesires, myIntentions);
-		//pi = Plan (myBeliefs, myDesires, myIntentions);
+		//Brf ();
+		//Options ();
+		//Filter ();
+		//pi = Plan ();
 		//execute (pi);
 
 
@@ -289,6 +289,7 @@ public class Move : MonoBehaviour
 	void Pursue(GameObject target) {
 		//pursuing = true;
 		Vector3 targetDir = target.transform.position - transform.position;
+		targetDir.y = 0;
 		float step  = smooth * Time.deltaTime;
 		Vector3 newDir = Vector3.RotateTowards(transform.forward, targetDir, step, 0.0f);
 		transform.rotation = Quaternion.LookRotation(newDir);
