@@ -48,6 +48,7 @@ public class Colony : MonoBehaviour {
 			individual.tag = playerTag;
 			Move indComponent = individual.GetComponent<Move> ();
 			indComponent.SetColonyPosition(this.transform.position);
+			indComponent.SetMyColony(this.gameObject);
 			// Muda a cor do Robot2
 			individual.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color = individualColor;
 			individuals.Add (individual);

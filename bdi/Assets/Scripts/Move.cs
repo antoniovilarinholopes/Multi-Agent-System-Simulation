@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 
 
-public enum Desire {GET_FOOD, DEFEND_COL, HELP_COLONY, HELP_SELF, POPULATE}
-public enum Intention {}
+public enum Desire {GET_FOOD, DEFEND_COL, HELP_OTHER, HELP_SELF, POPULATE}
+public enum Intention {GET_FOOD_AT, ATTACK_MONSTER_AT, GOTO_COL_AT, POPULATE_AT, HELP_OTHER_AT, EAT_FOOD}
 
 public class Move : MonoBehaviour
 {	
@@ -14,6 +14,7 @@ public class Move : MonoBehaviour
 	bool isFoodSourceOnSight;
 	GameObject foodOnSight, specFoodOnSight, obstacleOnSight, enemyOnSight, colonyOnSight, foodSourceOnSight;
 	GameObject food, enemy, wallObj, colony;
+	GameObject myColony;
 	Color flashColour = Color.red;
 	Color myColor;
 	float flashSpeed = 5f;
@@ -23,7 +24,8 @@ public class Move : MonoBehaviour
 	private float hitRate = 2f;
 	private const float SPEED = 10f;
 	IList<Desire> myDesires;
-	IList<Intention> myIntentions;
+	//Dictionary<Desire,int> myDesires;
+	Dictionary<Intention, Vector3> myIntentions;
 	Dictionary<Vector3, string> myBeliefs;
 
 	void Awake () {
@@ -40,11 +42,12 @@ public class Move : MonoBehaviour
 		isSpecFoodOnSight = false;
 		myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
 
+		//myDesires = new Dictionary<Desire,int>;
 		myDesires = new List<Desire> ();
 		InitializeDesires ();
 
-		myIntentions = new List<Intention> ();
-		//append Intentions
+		myIntentions = new Dictionary<Intention, Vector3> ();
+		//FIXME no initial intentions???
 
 		myBeliefs = new Dictionary<Vector3,string> ();
 
@@ -52,8 +55,7 @@ public class Move : MonoBehaviour
 
 	/*
 	 * Agent main loop
-	 * Purely reactive Agent
-	 * Function inside if's are sensors and the if's body has effectors
+	 * BDI Agent
 	 */
 	void Update() {
 		// Decreases Agent life over time
@@ -64,9 +66,9 @@ public class Move : MonoBehaviour
 		//FIXME
 		//p <- nextPercetp = what is seeing
 		//pseudo only, obvious that they will be updated with passage by ref
-		//Brf ();
-		//Options ();
-		//Filter ();
+		Brf ();
+		Options ();
+		Filter ();
 		//Plan pi = Plan ();
 		//pi.execute();
 
@@ -77,12 +79,25 @@ public class Move : MonoBehaviour
 	 */
 
 	void Brf () {
+		// The beliefs are constantly updated with the IsOnSight.
+		// However it's necessary to update that in the position of the agent
+		// there is nothing but him. Necessary in cases such as picking up food.
+		Vector3 myPosition = this.transform.position;
+		if (myBeliefs.ContainsKey (myPosition)) {
+			myBeliefs.Remove(myPosition);
+		}
+		myPosition.y += 1.5f;
+		if (myBeliefs.ContainsKey (myPosition)) {
+			myBeliefs.Remove(myPosition);
+		}
 	}
 
 	void Options () {
+		//using myBeliefs and myIntentions update myDesires
 	}
 
 	void Filter () {
+		//using my@(Beliefs,Intentions,Desires) update myIntentions
 	}
 
 	/*
@@ -254,12 +269,19 @@ public class Move : MonoBehaviour
 	}
 
 	void InitializeDesires () {
-		//FIXME ugly
+		foreach (Desire desire in System.Enum.GetValues(typeof(Desire))) {
+			myDesires.Add(desire);
+		}
+		/*
+		foreach (Desire desire in System.Enum.GetValues(typeof(Desire))) {
+			myDesires[desire] = 1;
+		}*/
+		/*
 		myDesires.Add (Desire.GET_FOOD);
 		myDesires.Add (Desire.DEFEND_COL);
-		myDesires.Add (Desire.HELP_COLONY);
+		myDesires.Add (Desire.HELP_OTHER);
 		myDesires.Add (Desire.HELP_SELF);
-		myDesires.Add (Desire.POPULATE);
+		myDesires.Add (Desire.POPULATE);*/
 	}
 
 	void MoveForward() {
@@ -311,7 +333,11 @@ public class Move : MonoBehaviour
 		if (health <= 0) {
 			Debug.Log ("Agent Died");
 			if(HasFood()) {
-				this.food.GetComponent<PickUpable>().SetBeingCarried(false);
+				PickUpable foodBeingCarried = this.food.GetComponent<PickUpable>();
+				foodBeingCarried.SetBeingCarried(false);
+				Vector3 myPosition = this.transform.position;
+				myPosition.y = 1.5f;
+				foodBeingCarried.transform.position = myPosition;
 			}
 			Object.Destroy(this.gameObject);
 		}
@@ -337,10 +363,15 @@ public class Move : MonoBehaviour
 		myBeliefs [position] = "MyCol";
 	}
 
+	public void SetMyColony (GameObject myColony) {
+		this.myColony = myColony;
+	}
+
 	public void SetIsFoodSourceOnSight (bool isFoodSourceOnSight, GameObject foodSourceOnSight){
 		this.isFoodSourceOnSight = isFoodSourceOnSight;
 		this.foodSourceOnSight = foodSourceOnSight;
-		Vector3 foodSourcePosition = new Vector3(foodSourceOnSight.transform.position.x, foodSourceOnSight.transform.position.y);
+		//Vector3 foodSourcePosition = new Vector3(foodSourceOnSight.transform.position.x, foodSourceOnSight.transform.position.y);
+		Vector3 foodSourcePosition = foodSourceOnSight.transform.position;
 		if(!myBeliefs.ContainsKey(foodSourcePosition)) {
 			myBeliefs [foodSourcePosition] = "FoodSource";
 		}
@@ -349,7 +380,8 @@ public class Move : MonoBehaviour
 	public void SetIsFoodOnSight (bool isFoodOnSight, GameObject foodOnSight) {
 		this.isFoodOnSight = isFoodOnSight;
 		this.foodOnSight = foodOnSight;
-		Vector3 foodPosition = new Vector3(foodOnSight.transform.position.x, foodOnSight.transform.position.y);
+		Vector3 foodPosition = foodOnSight.transform.position;
+		//Vector3 foodPosition = new Vector3(foodOnSight.transform.position.x, foodOnSight.transform.position.y);
 		if(!myBeliefs.ContainsKey(foodPosition)) {
 			myBeliefs[foodPosition] = "Food";
 		}
@@ -358,7 +390,8 @@ public class Move : MonoBehaviour
 	public void SetIsSpecFoodOnSight (bool isSpecFoodOnSight, GameObject specFoodOnSight) {
 		this.isSpecFoodOnSight = isSpecFoodOnSight;
 		this.specFoodOnSight = specFoodOnSight;
-		Vector3 foodPosition = new Vector3(specFoodOnSight.transform.position.x, specFoodOnSight.transform.position.y);
+		Vector3 foodPosition = specFoodOnSight.transform.position;
+		//Vector3 foodPosition = new Vector3(specFoodOnSight.transform.position.x, specFoodOnSight.transform.position.y);
 		if(!myBeliefs.ContainsKey(foodPosition)) {
 			myBeliefs[foodPosition] = "SpecFood";
 		}
@@ -367,6 +400,11 @@ public class Move : MonoBehaviour
 	public void SetIsEnemyOnSight (bool isEnemyOnSight, GameObject enemyOnSight) {
 		this.isEnemyOnSight = isEnemyOnSight;
 		this.enemyOnSight = enemyOnSight;
+		Vector3 enemyPosition = enemyOnSight.transform.position;
+		/* FIXME verify that if has the key, it was not a monster
+		if(!myBeliefs.ContainsKey(enemyPosition)) {
+			myBeliefs[enemyPosition] = "Monster";
+		}*/
 	}
 
 	public void SetIsObstacleOnSight (bool isObstacleOnSight, GameObject obstacleOnSight) {
