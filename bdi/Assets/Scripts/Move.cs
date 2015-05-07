@@ -3,9 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 
 
-public enum Desires {GET_FOOD, GET_FOOD_SELF, ATTACK, BREAK_OBS, HELP_COLONY, HELP_SELF, HELP_OTHERS}
-public enum Intentions {}
-
+public enum Desire {GET_FOOD, DEFEND_COL, HELP_COLONY, HELP_SELF, POPULATE}
+public enum Intention {}
 
 public class Move : MonoBehaviour
 {	
@@ -17,15 +16,16 @@ public class Move : MonoBehaviour
 	Color flashColour = Color.red;
 	Color myColor;
 	float flashSpeed = 5f;
+	Vector3 myColonyPosition;
 	public float distance, smooth;
 	private float health = 20f;
 	private float hitRate = 2f;
 	private const float SPEED = 10f;
-	IList<Desires> myDesires;
-	IList<Intentions> myIntentions;
+	IList<Desire> myDesires;
+	IList<Intention> myIntentions;
 	Dictionary<Vector3, string> myBeliefs;
 
-	void Start() {
+	void Awake () {
 		endOfWorld = false;
 		foodAhead = false;
 		enemyInAhead = false;
@@ -39,12 +39,12 @@ public class Move : MonoBehaviour
 		isSpecFoodOnSight = false;
 		myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
 
-		myDesires = new List<Desires> ();
-		//append Desires
-		myIntentions = new List<Intentions> ();
+		myDesires = new List<Desire> ();
+		InitializeDesires ();
+
+		myIntentions = new List<Intention> ();
 		//append Intentions
 
-		//Beliefs empty?
 		myBeliefs = new Dictionary<Vector3,string> ();
 
 	}
@@ -66,42 +66,28 @@ public class Move : MonoBehaviour
 		//Brf ();
 		//Options ();
 		//Filter ();
-		//pi = Plan ();
-		//execute (pi);
+		//Plan pi = Plan ();
+		//pi.execute();
 
-
-
-
-		/*
-		 * 
-		if (EndOfWorld ()) {
-			SendBack ();
-		} else if (AgentAhead ()) {
-			EvadeAgent ();
-		} else if (FoodAhead () && !HasFood ()) {
-			PickFood ();
-		} else if (AtBase () && HasFood ()) {
-			DropFood ();
-		} else if (EnemyAhead ()) {
-			HitEnemy ();
-		} else if (ObstacleAhead ()) {
-			HitWall ();
-		} else if (SpecFoodOnSight () && !HasFood ()) {
-			PursueFood (specFoodOnSight);
-		} else if (FoodOnSight () && !HasFood ()) {
-			PursueFood (foodOnSight);
-		} else if (HasFood () && ColonyOnSight ()){
-			GotoBase ();
-		} else if (ColonyOnSight () && HasLowLife ()) {
-			GotoBase ();
-		} else if (EnemyOnSight () && !HasFood ()) {
-			TryToDestroyEnemy ();
-		} else if (ObstacleOnSight () && !HasFood ()) {
-			PursueObstacle ();
-		} else {
-			MoveRandomly ();
-		}*/
 	}
+
+	/*
+	 * BDI
+	 */
+
+	void Brf () {
+	}
+
+	void Options () {
+	}
+
+	void Filter () {
+	}
+
+	/*
+	Plan Plan () {
+		return new Plan ();
+	}*/
 
 	/*
 	 * Sensors
@@ -266,6 +252,15 @@ public class Move : MonoBehaviour
 		SetIsSpecFoodOnSight (false, null);
 	}
 
+	void InitializeDesires () {
+		//FIXME ugly
+		myDesires.Add (Desire.GET_FOOD);
+		myDesires.Add (Desire.DEFEND_COL);
+		myDesires.Add (Desire.HELP_COLONY);
+		myDesires.Add (Desire.HELP_SELF);
+		myDesires.Add (Desire.POPULATE);
+	}
+
 	void MoveForward() {
 		transform.Translate (Vector3.forward * Time.deltaTime * SPEED, Space.Self);
 		// Move food along with him
@@ -335,6 +330,12 @@ public class Move : MonoBehaviour
 	}
 
 	// Setters
+
+	public void SetColonyPosition (Vector3 position) {
+		myColonyPosition = position;
+		myBeliefs [position] = "MyCol";
+	}
+
 	public void SetIsFoodOnSight (bool isFoodOnSight, GameObject foodOnSight) {
 		this.isFoodOnSight = isFoodOnSight;
 		this.foodOnSight = foodOnSight;

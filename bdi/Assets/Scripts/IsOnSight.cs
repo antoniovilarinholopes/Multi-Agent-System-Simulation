@@ -39,7 +39,9 @@ public class IsOnSight : MonoBehaviour {
 	}
 
 	void OnTriggerStay (Collider collider) {
-		if (collider.tag == "Food") {
+		if (collider.tag == "FoodSource") {
+			//FIXME
+		} else if (collider.tag == "Food") {
 			//FIXME ugly as s**t
 			Debug.Log("Food on Sight1");
 			if (IsObjectOnSight (collider)) {

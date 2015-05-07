@@ -10,6 +10,7 @@ public class Colony : MonoBehaviour {
 	const float foodMultiplier = 5f;
 	const float specialFoodMultiplier = 10f;
 	const float timeToRemoveHealth = 10f;
+	float minLimitFoodToPopulate = 20f;
 	string colonyLetter;
 
 	void Awake () {
@@ -44,6 +45,8 @@ public class Colony : MonoBehaviour {
 			rotation = Random.Range(0, 4) * 90;
 			individual.transform.Rotate(0f, rotation, 0f);
 			individual.tag = playerTag;
+			Move indComponent = individual.GetComponent<Move> ();
+			indComponent.SetColonyPosition(this.transform.position);
 			// Muda a cor do Robot2
 			individual.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color = individualColor;
 			individuals.Add (individual);
@@ -53,19 +56,62 @@ public class Colony : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		foodCount = 0;
+		//Add colony to each of them
+		/*foreach (GameObject individual in individuals) {
+			if (individual == null) {
+				continue;
+			}
+			Move indComponent = individual.GetComponent<Move> ();
+			indComponent.SetColonyPosition(this.transform.position);
+		}*/
 	}
 
 	void Update () {
 		IList<GameObject> individualsAtBase = new List<GameObject>();
+		int individualsAtBaseCount = 0;
 		foreach (GameObject ind in individuals) {
 			if (ind == null) {
+				individuals.Remove(ind);
 				continue;
 			}
 			Move indComponent = ind.GetComponent<Move> ();
-				if(indComponent.AtBase()) {
-					individualsAtBase.Add(ind);
-				}
+			if(indComponent.AtBase()) {
+				individualsAtBase.Add(ind);
+				individualsAtBaseCount++;
+			}
 		}
+
+		//If has plenty of food and at least 2 are at base, populate new inds
+		if (HasFoodToPopulate () && individualsAtBaseCount >= 2) {
+			minLimitFoodToPopulate += 2f;
+			Color individualColor;
+			string playerTag;
+			if(gameObject.tag == "ColA") {
+				individualColor = Color.blue;
+				playerTag = "PlayerA";
+			} else {
+				individualColor = Color.green;
+				playerTag = "PlayerB";
+			}
+			int maxAttempts = 0;
+			bool clearSpace;
+			Vector3 position;
+			do {
+				position = new Vector3(Random.Range(-10f, 10f), 0, Random.Range(-10f, 10f));
+				position += transform.position;
+				
+				clearSpace = Physics.CheckSphere(position, 1f);
+			} while (maxAttempts < 100 && !clearSpace);
+			
+			GameObject individual = Instantiate(prefabInd, position, Quaternion.identity) as GameObject;
+			int rotation = Random.Range(0, 4) * 90;
+			individual.transform.Rotate(0f, rotation, 0f);
+			individual.tag = playerTag;
+			// Muda a cor do Robot2
+			individual.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color = individualColor;
+			this.individuals.Add (individual);
+		}
+
 		if (foodCount > 0) { 
 			foreach (GameObject ind in individualsAtBase) {
 				if (ind == null) {
@@ -74,10 +120,10 @@ public class Colony : MonoBehaviour {
 				Move indComponent = ind.GetComponent<Move> ();
 				if (indComponent.HasLowLife () && foodCount > 0) {
 					indComponent.EatFood(5f);
+					foodCount -= 5f;
 				}
 			}
 		}
-		//each food heals 5 health
 	}
 
 	public void IncreaseFood (string food_tag) {
@@ -95,6 +141,11 @@ public class Colony : MonoBehaviour {
 			Text text = GameObject.Find("PointsB").GetComponent<Text>();
 			text.text = "" + foodCount;
 		}
+	}
+
+
+	public bool HasFoodToPopulate () {
+		return foodCount >= minLimitFoodToPopulate;
 	}
 
 
