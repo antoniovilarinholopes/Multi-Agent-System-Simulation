@@ -23,8 +23,8 @@ public class Move : MonoBehaviour
 	private float health = 20f;
 	private float hitRate = 2f;
 	private const float SPEED = 10f;
-	//IList<Desire> myDesires;
-	Dictionary<Desire,int> myDesires;
+	//IList<Desire> myDesires; 
+	Dictionary<Desire, float> myDesires;
 	Dictionary<Intention, Vector3> myIntentions;
 	Dictionary<Vector3, string> myBeliefs;
 	Plan currentPlan;
@@ -45,13 +45,13 @@ public class Move : MonoBehaviour
 		currentPlan = null;
 		myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
 
-		myDesires = new Dictionary<Desire,int> ();
+		myDesires = new Dictionary<Desire,float> ();
 		//myDesires = new List<Desire> ();
 		InitializeDesires ();
 
-		myIntentions = new Dictionary<Intention, Vector3> ();
+		//myIntentions = new Dictionary<Intention, Vector3> ();
 		//FIXME no initial intentions???
-
+		//myIntentions [Intention.SEARCH_FOOD] = null;
 		myBeliefs = new Dictionary<Vector3,string> ();
 
 	}
@@ -111,6 +111,56 @@ public class Move : MonoBehaviour
 
 	void Options () {
 		//using myBeliefs and myIntentions update myDesires
+		if (KnowWhereFoodIs () || KnowWhereFoodSourceIs ()) {
+			float get_food_multiplier = 1f;
+			//lower weight to get food if already carrying
+			if (!HasFood ()) {
+				get_food_multiplier = 0.3f;
+			}
+			myDesires [Desire.GET_FOOD] = 1f * get_food_multiplier;
+		} else {
+			myDesires [Desire.GET_FOOD] = 0.5f;
+		}
+
+		if (HasLowLife ()) {
+			float help_self_multiplier = 0.7f;
+			if (HasFood ()) {
+				help_self_multiplier = 1f;
+			}
+			myDesires [Desire.HELP_SELF] = 1f * help_self_multiplier;
+		} else {
+			myDesires [Desire.HELP_SELF] = 0.3f;
+		}
+
+		if (ColonyBeingAttacked ()) {
+			if (AtBase ()) {
+				myDesires [Desire.DEFEND_COL] = 1f;
+			} else {
+				float defend_col_multiplier = 1f;
+				float number_of_ind_at_base = HowManyAtBase ();
+				//The more there are at base the less I want to go there
+				if (number_of_ind_at_base > 0) {
+					defend_col_multiplier = defend_col_multiplier / number_of_ind_at_base;
+				}
+				myDesires [Desire.DEFEND_COL] = 1f * defend_col_multiplier;
+			}
+		} else {
+			myDesires [Desire.DEFEND_COL] = 0;
+		}
+
+		if (FoodToPopulate ()) {
+			float populate_multiplier = 1f;
+			float number_of_ind_at_base = HowManyAtBase ();
+			if (number_of_ind_at_base < 2) {
+				populate_multiplier = 0.7f;
+			}
+			myDesires [Desire.POPULATE] = 1f * populate_multiplier;
+		} else {
+			myDesires [Desire.POPULATE] = 0.1f;
+		}
+
+		//FIXME 
+		//TODO HELP_OTHER
 
 	}
 
@@ -128,9 +178,32 @@ public class Move : MonoBehaviour
 	 *BDI aux
 	 */
 
+	bool ColonyBeingAttacked () {
+		Colony myColComponent = myColony.GetComponent<Colony> ();
+		return myColComponent.IsUnderAttack ();
+	}
+
+	bool FoodToPopulate () {
+		Colony myColComponent = myColony.GetComponent<Colony> ();
+		return myColComponent.HasFoodToPopulate ();
+	}
+
+	float HowManyAtBase () {
+		Colony myColComponent = myColony.GetComponent<Colony> ();
+		return myColComponent.HowManyAtBase ();
+	}
+
 	bool Impossible () {
 		//is it possible that with my intention i complete my beliefs?
 		return false;
+	}
+
+	bool KnowWhereFoodIs () {
+		return myBeliefs.ContainsValue ("Food");
+	}
+
+	bool KnowWhereFoodSourceIs () {
+		return myBeliefs.ContainsValue ("FoodSource");
 	}
 
 	bool Sound () {
@@ -142,6 +215,26 @@ public class Move : MonoBehaviour
 		//have i done what i wanted to?
 		return false;
 	}
+
+	/*
+	class IntentionPosition {
+		Intention intention;
+		Vector3 position;
+
+		public IntentionPosition(Intention intention, Vector3 position) {
+			this.intention = intention;
+			this.position = position;
+		}
+
+		public Intention Intention () {
+			return this.intention;
+		}
+
+		public Vector3 Position () {
+			return this.position;
+		}
+
+	}*/
 
 	//FIXME Template for now, must be reviewd!!!
 	class Plan {

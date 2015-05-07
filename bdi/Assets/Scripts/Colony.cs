@@ -11,6 +11,7 @@ public class Colony : MonoBehaviour {
 	const float specialFoodMultiplier = 10f;
 	const float timeToRemoveHealth = 10f;
 	float minLimitFoodToPopulate = 20f;
+	bool isUnderAttack;
 	string colonyLetter;
 
 	void Awake () {
@@ -58,6 +59,7 @@ public class Colony : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		foodCount = 0;
+		isUnderAttack = false;
 		//Add colony to each of them
 		/*foreach (GameObject individual in individuals) {
 			if (individual == null) {
@@ -146,6 +148,29 @@ public class Colony : MonoBehaviour {
 	}
 
 
+	public bool IsUnderAttack () {
+		return isUnderAttack;
+	}
+
+	public float HowManyAtBase () {
+		float individualsAtBaseCount = 0f;
+		foreach (GameObject ind in individuals) {
+			if (ind == null) {
+				individuals.Remove(ind);
+				continue;
+			}
+			Move indComponent = ind.GetComponent<Move> ();
+			if(indComponent.AtBase()) {
+				individualsAtBaseCount++;
+			}
+		}
+		return individualsAtBaseCount;
+	}
+
+	public void SetIsUnderAttack(bool isUnderAttack) {
+		this.isUnderAttack = isUnderAttack;
+	}
+
 	public bool HasFoodToPopulate () {
 		return foodCount >= minLimitFoodToPopulate;
 	}
@@ -156,6 +181,9 @@ public class Colony : MonoBehaviour {
 			Move move = collider.GetComponent<Move>();
 			move.SetAtBase(false, null);
 		}
+		if (collider.gameObject.tag == "Monster") {
+			isUnderAttack = false;
+		}
 	}
 
 	void OnTriggerEnter (Collider collider) {
@@ -163,6 +191,9 @@ public class Colony : MonoBehaviour {
 		if(collider.gameObject.tag.StartsWith("Player") && collider.gameObject.tag.Substring(6) == colonyLetter) {
 			Move move = collider.GetComponent<Move>();
 			move.SetAtBase(true, gameObject);
+		}
+		if (collider.gameObject.tag == "Monster") {
+			isUnderAttack = true;
 		}
 	}
 
