@@ -32,7 +32,10 @@ public class IsOnSight : MonoBehaviour {
 				return hit.collider.gameObject.tag == collider.tag && collider.gameObject == hit.collider.gameObject;
 			}
 			return hit.collider.gameObject.tag == collider.tag;*/
-			Debug.Log(hit.collider.gameObject.name);
+			//FIXME 
+			if(collider.tag == "FoodSource" && hit.collider.tag == "Food") {
+				return true;
+			}
 			return collider.gameObject == hit.collider.gameObject;		
 		}
 		return false;
@@ -40,38 +43,34 @@ public class IsOnSight : MonoBehaviour {
 
 	void OnTriggerStay (Collider collider) {
 		if (collider.tag == "FoodSource") {
-			//FIXME
-			if(IsObjectOnSight(collider)) {
+			if(IsObjectOnSight(collider)) {;
 				myRobot.SetIsFoodSourceOnSight(true, collider.gameObject);
 			} else {
 				myRobot.SetIsFoodSourceOnSight(false, null);
 			}
 		} else if (collider.tag == "Food") {
-			//FIXME ugly
 			Debug.Log("Food on Sight1");
 			if (IsObjectOnSight (collider)) {
-				Debug.Log("Food on Sight");
+				//Debug.Log("Food on Sight");
 				myRobot.SetIsFoodOnSight (true, collider.gameObject);
 			} else {
 				myRobot.SetIsFoodOnSight (false, null);
 			}
 		} else if (collider.tag == "SpecFood") {
-			//FIXME ugly
 			if (IsObjectOnSight (collider)) {
-				Debug.Log("SpecFood on Sight");
+				//Debug.Log("SpecFood on Sight");
 				myRobot.SetIsSpecFoodOnSight (true, collider.gameObject);
 			} else {
 				myRobot.SetIsSpecFoodOnSight (false, null);
 			}
 		} else if (collider.tag == "Monster") {
 			if (IsObjectOnSight (collider)) {
-				Debug.Log("Monster on Sight");
+				//Debug.Log("Monster on Sight");
 				myRobot.SetIsEnemyOnSight (true, collider.gameObject);
 			} else {
 				myRobot.SetIsEnemyOnSight (false, null);
 			}
 		} else if (collider.tag == "Wall") {
-			//FIXME
 			if (IsObjectOnSight (collider)) {
 				//Debug.Log("Wall on Sight");
 				myRobot.SetIsObstacleOnSight (true, collider.gameObject);
