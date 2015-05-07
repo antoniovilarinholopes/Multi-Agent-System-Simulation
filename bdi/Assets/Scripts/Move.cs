@@ -25,7 +25,8 @@ public class Move : MonoBehaviour
 	private const float SPEED = 10f;
 	//IList<Desire> myDesires; 
 	Dictionary<Desire, float> myDesires;
-	Dictionary<Intention, Vector3> myIntentions;
+	Dictionary<Intention, IntentionDetails> myIntentions;
+	Intention currentIntention;
 	Dictionary<Vector3, string> myBeliefs;
 	Plan currentPlan;
 
@@ -49,9 +50,10 @@ public class Move : MonoBehaviour
 		//myDesires = new List<Desire> ();
 		InitializeDesires ();
 
-		//myIntentions = new Dictionary<Intention, Vector3> ();
+		myIntentions = new Dictionary<Intention, IntentionDetails> ();
 		//FIXME no initial intentions???
-		//myIntentions [Intention.SEARCH_FOOD] = null;
+		myIntentions [Intention.SEARCH_FOOD] = null;
+		currentIntention = Intention.SEARCH_FOOD;
 		myBeliefs = new Dictionary<Vector3,string> ();
 
 	}
@@ -68,7 +70,6 @@ public class Move : MonoBehaviour
 
 
 		//p <- nextPercetp = what is seeing
-		//pseudo only, obvious that they will be updated with passage by ref
 		//single commitment
 		if (currentPlan == null) {
 			currentPlan = null;
@@ -111,25 +112,26 @@ public class Move : MonoBehaviour
 
 	void Options () {
 		//using myBeliefs and myIntentions update myDesires
+		//FIXME currently myIntentions don't enter in the weight calculation
 		if (KnowWhereFoodIs () || KnowWhereFoodSourceIs ()) {
 			float get_food_multiplier = 1f;
 			//lower weight to get food if already carrying
 			if (!HasFood ()) {
-				get_food_multiplier = 0.3f;
+				get_food_multiplier = 0.05f;
 			}
 			myDesires [Desire.GET_FOOD] = 1f * get_food_multiplier;
 		} else {
-			myDesires [Desire.GET_FOOD] = 0.5f;
+			myDesires [Desire.GET_FOOD] = 0.7f;
 		}
 
 		if (HasLowLife ()) {
-			float help_self_multiplier = 0.7f;
+			float help_self_multiplier = 0.8f;
 			if (HasFood ()) {
 				help_self_multiplier = 1f;
 			}
 			myDesires [Desire.HELP_SELF] = 1f * help_self_multiplier;
 		} else {
-			myDesires [Desire.HELP_SELF] = 0.3f;
+			myDesires [Desire.HELP_SELF] = 0.2f;
 		}
 
 		if (ColonyBeingAttacked ()) {
@@ -216,32 +218,32 @@ public class Move : MonoBehaviour
 		return false;
 	}
 
-	/*
-	class IntentionPosition {
-		Intention intention;
+
+	class IntentionDetails {
+		float weight;
 		Vector3 position;
 
-		public IntentionPosition(Intention intention, Vector3 position) {
-			this.intention = intention;
+		public IntentionDetails(float weight, Vector3 position) {
+			this.weight = weight;
 			this.position = position;
 		}
 
-		public Intention Intention () {
-			return this.intention;
+		public float Weight () {
+			return this.weight;
 		}
 
 		public Vector3 Position () {
 			return this.position;
 		}
 
-	}*/
+	}
 
 	//FIXME Template for now, must be reviewd!!!
 	class Plan {
-		IList<string> steps;
+		IList<PlanAction> steps;
 		GameObject ind;
 		
-		public Plan (IList<string> steps, GameObject ind) {
+		public Plan (IList<PlanAction> steps, GameObject ind) {
 			this.steps = steps;
 			this.ind = ind;
 		}
@@ -253,24 +255,33 @@ public class Move : MonoBehaviour
 			return steps.Count == 0;
 		}
 		
-		public string Head () {
+		public PlanAction Head () {
 			if (steps == null) {
-				return "true";
+				return null;
 			}
 			return steps[0];
 		}
 		
 		public void Execute () {
-			var step = Head ();
-			//FIXME make ind execute step
 			if (steps == null) {
 				return;
 			}
+			var step = Head ();
+			//FIXME make ind execute step
 			steps.RemoveAt (0);
 		}
 		
 	}
 
+	class PlanAction {
+		string action;
+		Vector3 position;
+		
+		public PlanAction (string action, Vector3 position) {
+			this.action = action;
+			this.position = position;
+		}
+	}
 
 
 	/*
@@ -629,9 +640,7 @@ public class Move : MonoBehaviour
 		Debug.Log ("Agent Hitpoints: " + health);
 		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
 	}
-
-
-
+	
 
 }
 
