@@ -41,6 +41,11 @@ public class IsOnSight : MonoBehaviour {
 	void OnTriggerStay (Collider collider) {
 		if (collider.tag == "FoodSource") {
 			//FIXME
+			if(IsObjectOnSight(collider)) {
+				myRobot.SetIsFoodSourceOnSight(true, collider.gameObject);
+			} else {
+				myRobot.SetIsFoodSourceOnSight(false, null);
+			}
 		} else if (collider.tag == "Food") {
 			//FIXME ugly as s**t
 			Debug.Log("Food on Sight1");

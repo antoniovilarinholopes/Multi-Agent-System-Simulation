@@ -11,7 +11,8 @@ public class Move : MonoBehaviour
 	bool endOfWorld, hasFood, atBase;
 	bool enemyInAhead,foodAhead, obstacleAhead, agentAhead;
 	bool isFoodOnSight, isSpecFoodOnSight, isEnemyOnSight, isObstacleOnSight, isColonyOnSight;
-	GameObject foodOnSight, specFoodOnSight, obstacleOnSight, enemyOnSight, colonyOnSight;
+	bool isFoodSourceOnSight;
+	GameObject foodOnSight, specFoodOnSight, obstacleOnSight, enemyOnSight, colonyOnSight, foodSourceOnSight;
 	GameObject food, enemy, wallObj, colony;
 	Color flashColour = Color.red;
 	Color myColor;
@@ -336,14 +337,31 @@ public class Move : MonoBehaviour
 		myBeliefs [position] = "MyCol";
 	}
 
+	public void SetIsFoodSourceOnSight (bool isFoodSourceOnSight, GameObject foodSourceOnSight){
+		this.isFoodSourceOnSight = isFoodSourceOnSight;
+		this.foodSourceOnSight = foodSourceOnSight;
+		Vector3 foodSourcePosition = new Vector3(foodSourceOnSight.transform.position);
+		if(!myBeliefs.ContainsKey(foodSourcePosition)) {
+			myBeliefs [foodSourcePosition] = "FoodSource"
+		}
+	}
+
 	public void SetIsFoodOnSight (bool isFoodOnSight, GameObject foodOnSight) {
 		this.isFoodOnSight = isFoodOnSight;
 		this.foodOnSight = foodOnSight;
+		Vector3 foodPosition = new Vector3(foodOnSight.transform.position);
+		if(!myBeliefs.ContainsKey(foodPosition)) {
+			myBeliefs[foodPosition] = "Food";
+		}
 	}
 
 	public void SetIsSpecFoodOnSight (bool isSpecFoodOnSight, GameObject specFoodOnSight) {
 		this.isSpecFoodOnSight = isSpecFoodOnSight;
 		this.specFoodOnSight = specFoodOnSight;
+		Vector3 foodPosition = new Vector3(specFoodOnSight.transform.position);
+		if(!myBeliefs.ContainsKey(foodPosition)) {
+			myBeliefs[foodPosition] = "SpecFood";
+		}
 	}
 
 	public void SetIsEnemyOnSight (bool isEnemyOnSight, GameObject enemyOnSight) {
