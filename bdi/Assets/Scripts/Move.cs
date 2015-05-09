@@ -340,16 +340,16 @@ public class Move : MonoBehaviour
 	public void SetIsFoodSourceOnSight (bool isFoodSourceOnSight, GameObject foodSourceOnSight){
 		this.isFoodSourceOnSight = isFoodSourceOnSight;
 		this.foodSourceOnSight = foodSourceOnSight;
-		Vector3 foodSourcePosition = new Vector3(foodSourceOnSight.transform.position);
+		Vector3 foodSourcePosition = new Vector3(foodSourceOnSight.transform.position.x, foodSourceOnSight.transform.position.y);
 		if(!myBeliefs.ContainsKey(foodSourcePosition)) {
-			myBeliefs [foodSourcePosition] = "FoodSource"
+			myBeliefs [foodSourcePosition] = "FoodSource";
 		}
 	}
 
 	public void SetIsFoodOnSight (bool isFoodOnSight, GameObject foodOnSight) {
 		this.isFoodOnSight = isFoodOnSight;
 		this.foodOnSight = foodOnSight;
-		Vector3 foodPosition = new Vector3(foodOnSight.transform.position);
+		Vector3 foodPosition = new Vector3(foodOnSight.transform.position.x, foodOnSight.transform.position.y);
 		if(!myBeliefs.ContainsKey(foodPosition)) {
 			myBeliefs[foodPosition] = "Food";
 		}
@@ -358,7 +358,7 @@ public class Move : MonoBehaviour
 	public void SetIsSpecFoodOnSight (bool isSpecFoodOnSight, GameObject specFoodOnSight) {
 		this.isSpecFoodOnSight = isSpecFoodOnSight;
 		this.specFoodOnSight = specFoodOnSight;
-		Vector3 foodPosition = new Vector3(specFoodOnSight.transform.position);
+		Vector3 foodPosition = new Vector3(specFoodOnSight.transform.position.x, specFoodOnSight.transform.position.y);
 		if(!myBeliefs.ContainsKey(foodPosition)) {
 			myBeliefs[foodPosition] = "SpecFood";
 		}
