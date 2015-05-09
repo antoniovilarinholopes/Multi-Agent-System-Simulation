@@ -47,7 +47,7 @@ public class IsOnSight : MonoBehaviour {
 				myRobot.SetIsFoodSourceOnSight(false, null);
 			}
 		} else if (collider.tag == "Food") {
-			//FIXME ugly as s**t
+			//FIXME ugly
 			Debug.Log("Food on Sight1");
 			if (IsObjectOnSight (collider)) {
 				Debug.Log("Food on Sight");
@@ -56,7 +56,7 @@ public class IsOnSight : MonoBehaviour {
 				myRobot.SetIsFoodOnSight (false, null);
 			}
 		} else if (collider.tag == "SpecFood") {
-			//FIXME ugly as s**t
+			//FIXME ugly
 			if (IsObjectOnSight (collider)) {
 				Debug.Log("SpecFood on Sight");
 				myRobot.SetIsSpecFoodOnSight (true, collider.gameObject);
@@ -71,7 +71,7 @@ public class IsOnSight : MonoBehaviour {
 				myRobot.SetIsEnemyOnSight (false, null);
 			}
 		} else if (collider.tag == "Wall") {
-			//FIXME doesn't work properly
+			//FIXME
 			if (IsObjectOnSight (collider)) {
 				//Debug.Log("Wall on Sight");
 				myRobot.SetIsObstacleOnSight (true, collider.gameObject);
