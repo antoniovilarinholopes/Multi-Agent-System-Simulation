@@ -34,6 +34,7 @@ public class Colony : MonoBehaviour {
 		}
 		for(int i = 0; i < 8; i++) {
 			maxAttempts = 0;
+			// TODO: Ver clearSpace
 			do {
 				position = new Vector3(Random.Range(-10f, 10f), 0, Random.Range(-10f, 10f));
 				position += transform.position;

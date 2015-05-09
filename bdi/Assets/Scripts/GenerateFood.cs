@@ -9,10 +9,10 @@ public class GenerateFood : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		Vector3 pointForward = this.transform.position + Vector3.forward;
-		Vector3 pointLeft = this.transform.position + Vector3.left;
-		Vector3 pointRight = this.transform.position + Vector3.right;
-		Vector3 pointBack = this.transform.position + Vector3.back;
+		Vector3 pointForward = this.transform.position + Vector3.forward*5;
+		Vector3 pointLeft = this.transform.position + Vector3.left*5;
+		Vector3 pointRight = this.transform.position + Vector3.right*5;
+		Vector3 pointBack = this.transform.position + Vector3.back*5;
 		spawnPoints = new Vector3[]{pointForward, pointRight, pointLeft, pointBack};
 		InvokeRepeating ("SpawnFood", spawnTime, spawnTime);
 	}
@@ -20,8 +20,22 @@ public class GenerateFood : MonoBehaviour {
 	void SpawnFood () {
 		int spawnPointIndex = Random.Range (0, spawnPoints.Length);
 		//FIXME not working why?
-		bool clearSpace = Physics.CheckSphere (spawnPoints[spawnPointIndex], 2f);
-		if (clearSpace) {
+		/*bool occupiedSpace = Physics.CheckSphere (spawnPoints[spawnPointIndex], 2f);
+		Debug.Log("SpawnPoint: " + spawnPoints[spawnPointIndex] + ", Occupied: " + occupiedSpace);
+		if (!occupiedSpace) {
+			Instantiate (foodPrefab, spawnPoints[spawnPointIndex], Quaternion.identity);
+		}*/
+		// Check if there is already Food in that position
+		Collider[] hitColliders = Physics.OverlapSphere(spawnPoints[spawnPointIndex], 2f);
+		bool clearSpace = true;
+		foreach(Collider hitCollider in hitColliders) {
+			if(hitCollider.CompareTag("Food")) {
+				clearSpace = false;
+				break;
+			}
+		}
+		//Debug.Log("SpawnPoint: " + spawnPoints[spawnPointIndex] + ", Clear: " + clearSpace);
+		if(clearSpace) {
 			Instantiate (foodPrefab, spawnPoints[spawnPointIndex], Quaternion.identity);
 		}
 	}
