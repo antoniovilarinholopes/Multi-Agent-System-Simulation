@@ -54,7 +54,7 @@ public class Move : MonoBehaviour
 		InitializeDesires ();
 
 		//myIntentions = new Dictionary<Intention, IntentionDetails> ();
-		myIntentions = new List<IntentionDetails>;
+		myIntentions = new List<IntentionDetails> ();
 		//FIXME no initial intentions???
 		//myIntentions [Intention.SEARCH_FOOD] = null;
 		//currentIntention = Intention.SEARCH_FOOD;
