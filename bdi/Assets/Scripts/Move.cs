@@ -273,7 +273,7 @@ public class Move : MonoBehaviour
 	}
 
 
-	class IntentionDetails {
+	public class IntentionDetails {
 		Intention intention;
 		float weight;
 		Vector3 position;
@@ -338,15 +338,7 @@ public class Move : MonoBehaviour
 		
 	}
 
-	class PlanAction {
-		Action action;
-		Vector3 position;
-		
-		public PlanAction (Action action, Vector3 position) {
-			this.action = action;
-			this.position = position;
-		}
-	}
+
 
 
 	/*
