@@ -48,8 +48,6 @@ public class Colony : MonoBehaviour {
 			individual.transform.Rotate(0f, rotation, 0f);
 			individual.tag = playerTag;
 			Move indComponent = individual.GetComponent<Move> ();
-			indComponent.SetColonyPosition(this.transform.position);
-			indComponent.SetMyColony(this.gameObject);
 			// Muda a cor do Robot2
 			individual.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color = individualColor;
 			individuals.Add (individual);
@@ -61,13 +59,14 @@ public class Colony : MonoBehaviour {
 		foodCount = 0;
 		isUnderAttack = false;
 		//Add colony to each of them
-		/*foreach (GameObject individual in individuals) {
+		foreach (GameObject individual in individuals) {
 			if (individual == null) {
 				continue;
 			}
 			Move indComponent = individual.GetComponent<Move> ();
 			indComponent.SetColonyPosition(this.transform.position);
-		}*/
+			indComponent.SetMyColony(this.gameObject);
+		}
 	}
 
 	void Update () {

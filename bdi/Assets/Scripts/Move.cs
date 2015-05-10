@@ -4,17 +4,19 @@ using System.Collections.Generic;
 
 
 public enum Desire {GET_FOOD, DEFEND_COL, HELP_OTHER, HELP_SELF, POPULATE}
-public enum Intention {SEARCH_FOOD, GET_FOOD_AT, GOTO_FOODSOURCE_AT, ATTACK_MONSTER_AT, GOTO_COL_AT, POPULATE_AT, HELP_OTHER_AT, EAT_FOOD}
+public enum Intention {SEARCH_FOOD, GET_FOOD_AT, DESTROY_WALL_AT, GOTO_FOODSOURCE_AT, ATTACK_MONSTER_AT, GOTO_COL_AT, POPULATE_AT, HELP_OTHER_AT, EAT_FOOD}
+public enum Action {MOVE_TO, ROTATE_TO, EAT, FIGHT_MONSTER, POPULATE, DESTROY_WALL, PICK_FOOD, DROP_FOOD}
 
 public class Move : MonoBehaviour
 {	
 	bool endOfWorld, hasFood, atBase;
-	bool enemyInAhead,foodAhead, obstacleAhead, agentAhead;
+	bool enemyInAhead, foodAhead, obstacleAhead, agentAhead;
 	bool isFoodOnSight, isSpecFoodOnSight, isEnemyOnSight, isObstacleOnSight, isColonyOnSight;
 	bool isFoodSourceOnSight;
 	GameObject foodOnSight, specFoodOnSight, obstacleOnSight, enemyOnSight, colonyOnSight, foodSourceOnSight;
 	GameObject food, enemy, wallObj, colony;
-	GameObject myColony;
+	public GameObject myColony;
+	public Colony myColonyComp;
 	Color flashColour = Color.red;
 	Color myColor;
 	float flashSpeed = 5f;
@@ -25,8 +27,9 @@ public class Move : MonoBehaviour
 	private const float SPEED = 10f;
 	//IList<Desire> myDesires; 
 	Dictionary<Desire, float> myDesires;
-	Dictionary<Intention, IntentionDetails> myIntentions;
-	Intention currentIntention;
+	//Dictionary<Intention, IntentionDetails> myIntentions;
+	IList<IntentionDetails> myIntentions;
+	//Intention currentIntention;
 	Dictionary<Vector3, string> myBeliefs;
 	Plan currentPlan;
 
@@ -50,10 +53,11 @@ public class Move : MonoBehaviour
 		//myDesires = new List<Desire> ();
 		InitializeDesires ();
 
-		myIntentions = new Dictionary<Intention, IntentionDetails> ();
+		//myIntentions = new Dictionary<Intention, IntentionDetails> ();
+		myIntentions = new List<IntentionDetails>;
 		//FIXME no initial intentions???
-		myIntentions [Intention.SEARCH_FOOD] = null;
-		currentIntention = Intention.SEARCH_FOOD;
+		//myIntentions [Intention.SEARCH_FOOD] = null;
+		//currentIntention = Intention.SEARCH_FOOD;
 		myBeliefs = new Dictionary<Vector3,string> ();
 
 	}
@@ -77,7 +81,7 @@ public class Move : MonoBehaviour
 			Options ();
 			Filter ();
 			currentPlan = PlanNewPlan ();
-			currentPlan.Execute ();
+			//currentPlan.Execute ();
 		} else {
 			if(currentPlan.IsEmpty () || Succeeded () || Impossible ()) {
 				currentPlan = null;
@@ -89,7 +93,6 @@ public class Move : MonoBehaviour
 				currentPlan = PlanNewPlan ();
 			}
 		}
-
 	}
 
 	/*
@@ -104,6 +107,7 @@ public class Move : MonoBehaviour
 		if (myBeliefs.ContainsKey (myPosition)) {
 			myBeliefs.Remove(myPosition);
 		}
+		//FIXME may cause problems with food sources
 		myPosition.y += 1.5f;
 		if (myBeliefs.ContainsKey (myPosition)) {
 			myBeliefs.Remove(myPosition);
@@ -113,10 +117,11 @@ public class Move : MonoBehaviour
 	void Options () {
 		//using myBeliefs and myIntentions update myDesires
 		//FIXME currently myIntentions don't enter in the weight calculation
+
 		if (KnowWhereFoodIs () || KnowWhereFoodSourceIs ()) {
-			float get_food_multiplier = 1f;
+			float get_food_multiplier = 0.9f;
 			//lower weight to get food if already carrying
-			if (!HasFood ()) {
+			if (HasFood ()) {
 				get_food_multiplier = 0.05f;
 			}
 			myDesires [Desire.GET_FOOD] = 1f * get_food_multiplier;
@@ -125,20 +130,20 @@ public class Move : MonoBehaviour
 		}
 
 		if (HasLowLife ()) {
-			float help_self_multiplier = 0.8f;
+			float help_self_multiplier = 0.9f;
 			if (HasFood ()) {
 				help_self_multiplier = 1f;
 			}
 			myDesires [Desire.HELP_SELF] = 1f * help_self_multiplier;
 		} else {
-			myDesires [Desire.HELP_SELF] = 0.2f;
+			myDesires [Desire.HELP_SELF] = 0.1f;
 		}
 
 		if (ColonyBeingAttacked ()) {
 			if (AtBase ()) {
-				myDesires [Desire.DEFEND_COL] = 1f;
+				myDesires [Desire.DEFEND_COL] = 0.9f;
 			} else {
-				float defend_col_multiplier = 1f;
+				float defend_col_multiplier = 0.9f;
 				float number_of_ind_at_base = HowManyAtBase ();
 				//The more there are at base the less I want to go there
 				if (number_of_ind_at_base > 0) {
@@ -151,10 +156,14 @@ public class Move : MonoBehaviour
 		}
 
 		if (FoodToPopulate ()) {
-			float populate_multiplier = 1f;
-			float number_of_ind_at_base = HowManyAtBase ();
-			if (number_of_ind_at_base < 2) {
-				populate_multiplier = 0.7f;
+			float populate_multiplier = 0.3f;
+			if(AtBase ()) {
+				populate_multiplier = 0.9f;
+			} else {
+				float number_of_ind_at_base = HowManyAtBase ();
+				if (number_of_ind_at_base < 2) {
+					populate_multiplier = 0.7f;
+				}
 			}
 			myDesires [Desire.POPULATE] = 1f * populate_multiplier;
 		} else {
@@ -162,12 +171,28 @@ public class Move : MonoBehaviour
 		}
 
 		//FIXME 
-		//TODO HELP_OTHER
-
+		//TODO HELP_OTHER, communication needed
+		myDesires [Desire.HELP_OTHER] = 0f;
 	}
 
 	void Filter () {
 		//using my@(Beliefs,Intentions,Desires) update myIntentions
+		//Get my biggest desires
+		var biggestDesireValue = 0f;
+		foreach (var desire in myDesires.Keys) {
+			if(myDesires [desire] > biggestDesireValue) {
+				biggestDesireValue = myDesires [desire];
+			}
+		}
+
+		IList<Desire> myBiggestDesires = new List<Desire>() ;
+		foreach (var desire in myDesires.Keys) {
+			if(myDesires [desire] == biggestDesireValue) {
+				myBiggestDesires.Add(desire);
+			}
+		}
+
+		myIntentions = RetrieveIntentionsFromDesires (myBiggestDesires);
 	}
 
 
@@ -181,22 +206,25 @@ public class Move : MonoBehaviour
 	 */
 
 	bool ColonyBeingAttacked () {
-		Colony myColComponent = myColony.GetComponent<Colony> ();
-		return myColComponent.IsUnderAttack ();
+		/*Colony myColComponent = myColony.gameObject.GetComponent<Colony> ();
+		return myColComponent.IsUnderAttack ();*/
+		return myColonyComp.IsUnderAttack ();
 	}
 
 	bool FoodToPopulate () {
-		Colony myColComponent = myColony.GetComponent<Colony> ();
-		return myColComponent.HasFoodToPopulate ();
+		/*Colony myColComponent = myColony.GetComponent<Colony> ();
+		return myColComponent.HasFoodToPopulate ();*/
+		return myColonyComp.HasFoodToPopulate ();
 	}
 
 	float HowManyAtBase () {
-		Colony myColComponent = myColony.GetComponent<Colony> ();
-		return myColComponent.HowManyAtBase ();
+		/*Colony myColComponent = myColony.GetComponent<Colony> ();
+		return myColComponent.HowManyAtBase ();*/
+		return myColonyComp.HowManyAtBase ();
 	}
 
 	bool Impossible () {
-		//is it possible that with my intention i complete my beliefs?
+		//is it possible that with my beliefs i complete my intention(s)?
 		return false;
 	}
 
@@ -208,20 +236,53 @@ public class Move : MonoBehaviour
 		return myBeliefs.ContainsValue ("FoodSource");
 	}
 
+	IList<IntentionDetails> RetrieveIntentionsFromDesires (IList<Desire> desires) {
+		IList<IntentionDetails> myCurrentIntentions = new List<IntentionDetails> () ;
+
+		foreach (var desire in desires) {
+			if (desire == Desire.HELP_SELF) {
+				if (HasFood()) {
+					IntentionDetails intention = new IntentionDetails(Intention.EAT_FOOD,1f,this.transform.position);
+					myCurrentIntentions.Add (intention);
+				} else {
+					IntentionDetails intention = new IntentionDetails(Intention.GOTO_COL_AT,1f,myColonyPosition);
+					myCurrentIntentions.Add (intention);
+				}
+			} else if (desire == Desire.POPULATE) {
+				//FIXME give position
+				//myCurrentIntentions.Add (Intention.POPULATE_AT);
+			} else if (desire == Desire.DEFEND_COL) {
+				//FIXME give position
+				//myCurrentIntentions.Add (Intention.ATTACK_MONSTER_AT);
+			} else if (desire == Desire.GET_FOOD) {
+				//myCurrentIntentions.Add (Intention.GET_FOOD_AT);
+			}
+		}
+		return myCurrentIntentions;
+
+	}
+
 	bool Sound () {
 		//has the plan gone wrong?
-		return true;
+		return false;
 	}
 
 	bool Succeeded () {
 		//have i done what i wanted to?
-		return false;
+		return true;
 	}
 
 
 	class IntentionDetails {
+		Intention intention;
 		float weight;
 		Vector3 position;
+
+		public IntentionDetails(Intention intention, float weight, Vector3 position) {
+			this.weight = weight;
+			this.position = position;
+			this.intention = intention;
+		}
 
 		public IntentionDetails(float weight, Vector3 position) {
 			this.weight = weight;
@@ -234,6 +295,10 @@ public class Move : MonoBehaviour
 
 		public Vector3 Position () {
 			return this.position;
+		}
+
+		public Intention Intention () {
+			return this.intention;
 		}
 
 	}
@@ -274,10 +339,10 @@ public class Move : MonoBehaviour
 	}
 
 	class PlanAction {
-		string action;
+		Action action;
 		Vector3 position;
 		
-		public PlanAction (string action, Vector3 position) {
+		public PlanAction (Action action, Vector3 position) {
 			this.action = action;
 			this.position = position;
 		}
@@ -458,7 +523,7 @@ public class Move : MonoBehaviour
 		}*/
 
 		foreach (Desire desire in System.Enum.GetValues(typeof(Desire))) {
-			myDesires[desire] = 1;
+			myDesires[desire] = 1f;
 		}
 		/*
 		myDesires.Add (Desire.GET_FOOD);
@@ -542,6 +607,7 @@ public class Move : MonoBehaviour
 
 	// Setters
 
+
 	public void SetColonyPosition (Vector3 position) {
 		myColonyPosition = position;
 		myBeliefs [position] = "MyCol";
@@ -549,6 +615,8 @@ public class Move : MonoBehaviour
 
 	public void SetMyColony (GameObject myColony) {
 		this.myColony = myColony;
+		myColonyComp = myColony.gameObject.GetComponent<Colony> ();
+		Debug.Log (myColonyComp.IsUnderAttack ());
 	}
 
 	public void SetIsFoodSourceOnSight (bool isFoodSourceOnSight, GameObject foodSourceOnSight){
@@ -598,6 +666,11 @@ public class Move : MonoBehaviour
 	public void SetIsObstacleOnSight (bool isObstacleOnSight, GameObject obstacleOnSight) {
 		this.isObstacleOnSight = isObstacleOnSight;
 		this.obstacleOnSight = obstacleOnSight;
+		Vector3 obsPosition = obstacleOnSight.transform.position;
+		// FIXME
+		if(!myBeliefs.ContainsKey(obsPosition)) {
+			myBeliefs [obsPosition] = "Wall";
+		}
 	}
 
 	public void SetIsColonyOnSight (bool isColonyOnSight, GameObject colonyOnSight) {
