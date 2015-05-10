@@ -15,8 +15,8 @@ public class Move : MonoBehaviour
 	bool isFoodSourceOnSight;
 	GameObject foodOnSight, specFoodOnSight, obstacleOnSight, enemyOnSight, colonyOnSight, foodSourceOnSight;
 	GameObject food, enemy, wallObj, colony;
-	public GameObject myColony;
-	public Colony myColonyComp;
+	GameObject myColony;
+	Colony myColonyComp;
 	Color flashColour = Color.red;
 	Color myColor;
 	float flashSpeed = 5f;
@@ -25,6 +25,7 @@ public class Move : MonoBehaviour
 	private float health = 20f;
 	private float hitRate = 2f;
 	private const float SPEED = 10f;
+	NavMeshAgent navMeshAgent;
 	//IList<Desire> myDesires; 
 	Dictionary<Desire, float> myDesires;
 	//Dictionary<Intention, IntentionDetails> myIntentions;
@@ -35,6 +36,7 @@ public class Move : MonoBehaviour
 
 
 	void Awake () {
+		navMeshAgent = this.GetComponent<NavMeshAgent> ();
 		endOfWorld = false;
 		foodAhead = false;
 		enemyInAhead = false;
@@ -71,10 +73,15 @@ public class Move : MonoBehaviour
 		// Decreases Agent life over time
 		// Value can be a public variable
 		DecreaseLife(0.5f);
-
-
+		/* just a test
+		navMeshAgent.SetDestination (new Vector3 (0f, 0f, 0f));
+		if (foodAhead) {
+			Debug.Log("Food Ahead");
+			PickFood ();
+		}*/
 		//p <- nextPercetp = what is seeing
 		//single commitment
+
 		if (currentPlan == null) {
 			currentPlan = null;
 			Brf ();

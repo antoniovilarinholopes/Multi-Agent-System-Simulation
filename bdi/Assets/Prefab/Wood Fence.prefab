@@ -12,6 +12,7 @@ GameObject:
   - 23: {fileID: 2333038}
   - 65: {fileID: 6568256}
   - 114: {fileID: 11497664}
+  - 208: {fileID: 20806158}
   m_Layer: 0
   m_Name: Wood Fence
   m_TagString: Wall
@@ -87,6 +88,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hitRate: 1
   hitPoints: 20
+--- !u!208 &20806158
+NavMeshObstacle:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 123040}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 3.04100013, y: 1, z: .0580000021}
+  m_MoveThreshold: .100000001
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 3.04100013, y: 1, z: .00300000003}
+  m_TimeToStationary: .5
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1

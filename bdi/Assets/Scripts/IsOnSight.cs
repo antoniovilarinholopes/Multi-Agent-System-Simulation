@@ -49,9 +49,8 @@ public class IsOnSight : MonoBehaviour {
 				myRobot.SetIsFoodSourceOnSight(false, null);
 			}
 		} else if (collider.tag == "Food") {
-			Debug.Log("Food on Sight1");
 			if (IsObjectOnSight (collider)) {
-				//Debug.Log("Food on Sight");
+				Debug.Log("Food on Sight");
 				myRobot.SetIsFoodOnSight (true, collider.gameObject);
 			} else {
 				myRobot.SetIsFoodOnSight (false, null);
