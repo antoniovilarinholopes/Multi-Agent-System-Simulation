@@ -228,26 +228,23 @@ public class Move : MonoBehaviour
 	 */
 
 	bool ColonyBeingAttacked () {
-
-		//Colony myColComponent = myColony.gameObject.GetComponent<Colony> ();
-		//return myColComponent.IsUnderAttack ();
 		return myColonyComp.IsUnderAttack ();
 	}
+	
 
-	bool FoodToPopulate () {
-		/*Colony myColComponent = myColony.GetComponent<Colony> ();
-		return myColComponent.HasFoodToPopulate ();*/
-		return myColonyComp.HasFoodToPopulate ();
+	bool CanMakeItThere(Vector3 there) {
+		return true;
 	}
 
 	Vector3 ClosestFood () {
-		Vector3 closestFoodPosition = null;
+		Vector3 closestFoodPosition = new Vector3(0f,0f,0f);
 		float minDist = float.MaxValue;
-		foreach (Vector3 belief in myBeliefs) {
+		foreach (Vector3 belief in myBeliefs.Keys) {
 			if(myBeliefs [belief] == "Food" || myBeliefs [belief] == "SpecFood") {
-				float distance_x = belief.x - this.transform.position.x;
+				/*float distance_x = belief.x - this.transform.position.x;
 				float distance_z = belief.z - this.transform.position.z;
-				float distance_to_food = distance_x*distance_x + distance_z*distance_z;
+				float distance_to_food = distance_x*distance_x + distance_z*distance_z;*/
+				float distance_to_food = DistanceBetweenMeAndPoint(belief);
 				if(distance_to_food < minDist) {
 					minDist = distance_to_food;
 					closestFoodPosition = belief;
@@ -259,13 +256,32 @@ public class Move : MonoBehaviour
 	}
 
 	Vector3 ClosestFoodSource () {
-		Vector3 closestFoodSourcePosition = null;
+		Vector3 closestFoodSourcePosition = new Vector3(0f,0f,0f);
 		float minDist = float.MaxValue;
-		foreach (Vector3 belief in myBeliefs) {
+		foreach (Vector3 belief in myBeliefs.Keys) {
 			if(myBeliefs [belief] == "FoodSource") {
-				float distance_x = belief.x - this.transform.position.x;
+				/*float distance_x = belief.x - this.transform.position.x;
 				float distance_z = belief.z - this.transform.position.z;
-				float distance_to_foodsource = distance_x*distance_x + distance_z*distance_z;
+				float distance_to_foodsource = distance_x*distance_x + distance_z*distance_z;*/
+				float distance_to_foodsource = DistanceBetweenMeAndPoint(belief);
+				if(distance_to_foodsource < minDist) {
+					minDist = distance_to_foodsource;
+					closestFoodSourcePosition = belief;
+				}
+			}
+		}
+		return closestFoodSourcePosition;
+	}
+
+	Vector3 ClosestObstacle () {
+		Vector3 closestFoodSourcePosition = new Vector3(0f,0f,0f);
+		float minDist = float.MaxValue;
+		foreach (Vector3 belief in myBeliefs.Keys) {
+			if(myBeliefs [belief] == "SpecFood") {
+				/*float distance_x = belief.x - this.transform.position.x;
+				float distance_z = belief.z - this.transform.position.z;
+				float distance_to_foodsource = distance_x*distance_x + distance_z*distance_z;*/
+				float distance_to_foodsource = DistanceBetweenMeAndPoint(belief);
 				if(distance_to_foodsource < minDist) {
 					minDist = distance_to_foodsource;
 					closestFoodSourcePosition = belief;
@@ -276,13 +292,15 @@ public class Move : MonoBehaviour
 	}
 
 	Vector3 ClosestSpecialFood () {
-		Vector3 closestFoodSourcePosition = null;
+		//Assume that belief exists
+		Vector3 closestFoodSourcePosition = new Vector3(0f,0f,0f);
 		float minDist = float.MaxValue;
-		foreach (Vector3 belief in myBeliefs) {
+		foreach (Vector3 belief in myBeliefs.Keys) {
 			if(myBeliefs [belief] == "SpecFood") {
-				float distance_x = belief.x - this.transform.position.x;
+				/*float distance_x = belief.x - this.transform.position.x;
 				float distance_z = belief.z - this.transform.position.z;
-				float distance_to_foodsource = distance_x*distance_x + distance_z*distance_z;
+				float distance_to_foodsource = distance_x*distance_x + distance_z*distance_z;*/
+				float distance_to_foodsource = DistanceBetweenMeAndPoint(belief);
 				if(distance_to_foodsource < minDist) {
 					minDist = distance_to_foodsource;
 					closestFoodSourcePosition = belief;
@@ -292,9 +310,17 @@ public class Move : MonoBehaviour
 		return closestFoodSourcePosition;
 	}
 
+	float DistanceBetweenMeAndPoint (Vector3 target) {
+		float distance_x = target.x - this.transform.position.x;
+		float distance_z = target.z - this.transform.position.z;
+		return distance_x*distance_x + distance_z*distance_z;
+	}
+	
+	bool FoodToPopulate () {
+		return myColonyComp.HasFoodToPopulate ();
+	}
+
 	float HowManyAtBase () {
-		/*Colony myColComponent = myColony.GetComponent<Colony> ();
-		return myColComponent.HowManyAtBase ();*/
 		return myColonyComp.HowManyAtBase ();
 	}
 
@@ -337,24 +363,28 @@ public class Move : MonoBehaviour
 					myCurrentIntentions.Add (intention);
 				}
 				float colony_multiplier = 0.9f;
-				Vector3 closestFood = ClosestFood ();
-				if (closestFood != null) {
-					float dist_food_x = closestFood.x - this.transform.position.x;
+
+				if (KnowWhereFoodIs ()) {
+					Vector3 closestFood = ClosestFood ();
+					/*float dist_food_x = closestFood.x - this.transform.position.x;
 					float dist_food_z = closestFood.z - this.transform.position.z;
 					float distance_to_food = dist_food_x*dist_food_x + dist_food_z*dist_food_z;
 					float dist_col_x = myColonyPosition.x - this.transform.position.x;
 					float dist_col_z = myColonyPosition.z - this.transform.position.z;
 					float distance_to_col = dist_col_x*dist_col_x + dist_col_z*dist_col_z;
-
+					*/
+					float distance_to_food = DistanceBetweenMeAndPoint(closestFood);
+					float distance_to_col = DistanceBetweenMeAndPoint(myColonyPosition);
 					float weight = 0.5f;
 					if (distance_to_food < distance_to_col) {
-						weight = 0.9;
+						weight = 0.9f;
 						colony_multiplier = 0.5f;
 					} 
-					IntentionDetails intention = new IntentionDetails(Intention.GOTO_COL_AT,0.9f,myColonyPosition);
+					IntentionDetails intention = new IntentionDetails(Intention.GOTO_COL_AT,1.0f*weight,myColonyPosition);
 					myCurrentIntentions.Add (intention);
+					continue;
 				}
-				IntentionDetails intention_details = new IntentionDetails(Intention.GOTO_COL_AT,1f*closestFood,myColonyPosition);
+				IntentionDetails intention_details = new IntentionDetails(Intention.GOTO_COL_AT,1.0f*colony_multiplier, myColonyPosition);
 				myCurrentIntentions.Add (intention_details);
 			} else if (desire == Desire.POPULATE) {
 				float weight = 0.6f;
@@ -376,53 +406,63 @@ public class Move : MonoBehaviour
 				if (number_of_ind_at_base > 0) {
 					defend_col_multiplier = defend_col_multiplier / number_of_ind_at_base;
 				}
-				IntentionDetails intention = new IntentionDetails(Intention.ATTACK_MONSTER_AT, 1f*defend_col_multiplier, myColonyPosition));
+				IntentionDetails intention = new IntentionDetails(Intention.ATTACK_MONSTER_AT, 1f*defend_col_multiplier, myColonyPosition);
 				myCurrentIntentions.Add (intention);
 			} else if (desire == Desire.GET_FOOD) {
-				bool knowWhereFoodIs = KnowWhereFoodIs ();
-				bool knowWhereFoodSourceIs = KnowWhereFoodSourceIs ();
-				bool knowWhereSpecialFoodIs = KnowWhereSpecialFoodIs ();
-				bool knowWhereObsIs = KnowWhereObstacleIs ();
 
+				bool knowWhereSpecialFoodIs = KnowWhereSpecialFoodIs ();
 				if (knowWhereSpecialFoodIs) {
 					float special_food_multiplier = 0.9f;
 					Vector3 closestSpecialFood = ClosestSpecialFood ();
 					bool canMakeToSpecFood = CanMakeItThere(closestSpecialFood);
 					if(canMakeToSpecFood) {
-						IntentionDetails intention = new IntentionDetails(Intention.GOTO_FOODSOURCE_AT, 1f*special_food_multiplier, closestSpecialFood);
+						IntentionDetails intention = new IntentionDetails(Intention.GET_FOOD_AT, 1f*special_food_multiplier, closestSpecialFood);
 						myCurrentIntentions.Add (intention);
 						continue;
 					}
-				} 
+				}
+
+				bool knowWhereFoodSourceIs = KnowWhereFoodSourceIs ();
 				if (knowWhereFoodSourceIs) {
 					float foodsource_mul = 0.9f;
 					Vector3 closestFoodSource = ClosestFoodSource ();
-					bool canMakeToFoodSource = CanMakeItThere(ClosestFoodSource);
+					bool canMakeToFoodSource = CanMakeItThere(closestFoodSource);
 					if(canMakeToFoodSource) {
 						IntentionDetails intention = new IntentionDetails(Intention.GOTO_FOODSOURCE_AT, 1f*foodsource_mul, closestFoodSource);
 						myCurrentIntentions.Add (intention);
 						continue;
 					} 
 
-				} 
+				}
+
+				bool knowWhereFoodIs = KnowWhereFoodIs ();
+				bool knowWhereObsIs = KnowWhereObstacleIs ();
 				if (knowWhereFoodIs) {
 					float food_mul = 0.9f;
 					Vector3 closestFood = ClosestFood ();
-					bool canMakeToFood = CanMakeItThere(ClosestFood);
+					bool canMakeToFood = CanMakeItThere(closestFood);
 					if(canMakeToFood) {
-						IntentionDetails intention = new IntentionDetails(Intention.GOTO_FOODSOURCE_AT, 1f*food_mul, closestFoodSource);
+						if ((!knowWhereObsIs) || (knowWhereObsIs && !HasHighLife ())) {
+							IntentionDetails intention = new IntentionDetails(Intention.GET_FOOD_AT, 1f*food_mul, closestFood);
+							myCurrentIntentions.Add (intention);
+							continue;
+						} 
+					} 
+				}
+
+				if (knowWhereObsIs){
+					Vector3 closestObstacle = ClosestObstacle ();
+					bool canMakeToObs = CanMakeItThere(closestObstacle);
+					if(canMakeToObs) {
+						IntentionDetails intention = new IntentionDetails(Intention.DESTROY_WALL_AT, 0.9f, closestObstacle);
 						myCurrentIntentions.Add (intention);
 						continue;
 					} 
+				}
+				//Search for food randomly
+				IntentionDetails intention_det = new IntentionDetails(Intention.SEARCH_FOOD, 0.7f, MoveRandomly());
+				myCurrentIntentions.Add (intention_det);
 
-				} 
-				if (KnowWhereObstacleIs ()){
-
-				} 
-				IntentionDetails intention = new IntentionDetails(Intention.SEARCH_FOOD, 0.9f, MoveRandomly());
-				myCurrentIntentions.Add (intention);
-
-				//myCurrentIntentions.Add (Intention.GET_FOOD_AT);
 			} else {
 				//desire == Desire.HELP_OTHER
 
@@ -550,13 +590,16 @@ public class Move : MonoBehaviour
 	}
 
 	public bool HasLowLife () {
-		return health <= 5;
+		return health <= 5f;
 	}
 	
 	bool HasFood ()	{
 		return hasFood;
 	}
 
+	bool HasHighLife () {
+		return health >= 18f;
+	}
 	
 	bool ObstacleOnSight ()	{
 		return isObstacleOnSight;
@@ -877,7 +920,6 @@ public class Move : MonoBehaviour
 		Debug.Log ("Agent Hitpoints: " + health);
 		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
 	}
-	
 
 }
 
