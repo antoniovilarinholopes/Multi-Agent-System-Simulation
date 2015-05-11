@@ -4,10 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class Planner {
-
-	private IList<Vector3> beliefs;
-	private Queue<Move.IntentionDetails> intentions;
-	private IList<Action> actions;
+	private Move.IntentionDetails intentionDetails;
 
 	private Vector3 colonyPosition;
 
@@ -15,15 +12,12 @@ public class Planner {
 		this.colonyPosition = colonyPosition;
 	}
 
-	public void UpdatePlanner(IList<Vector3> beliefs, IList<Move.IntentionDetails> intentions, IList<Action> actions) {
-		this.beliefs = beliefs;
-		this.intentions = new Queue<Move.IntentionDetails>(intentions);
-		this.actions = actions;
+	public void UpdatePlanner(Move.IntentionDetails intentionDetails) {
+		this.intentionDetails = intentionDetails;
 	}
 
 	public Queue<PlanAction> Plan() {
 		//Num planner mais avancado em vez de fazer dequeue teria de ir a uma lista e escolher qual a proxima intencao
-		Move.IntentionDetails intentionDetails = intentions.Dequeue ();
 		Queue<PlanAction> plan = new Queue<PlanAction> (); 
 
 		Intention intention = intentionDetails.Intention();
