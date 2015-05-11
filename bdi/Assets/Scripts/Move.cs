@@ -30,7 +30,7 @@ public class Move : MonoBehaviour
 	Dictionary<Desire, float> myDesires;
 	//Dictionary<Intention, IntentionDetails> myIntentions;
 	IList<IntentionDetails> myIntentions;
-	//Intention currentIntention;
+	IntentionDetails myCurrentIntention;
 	Dictionary<Vector3, string> myBeliefs;
 	Plan currentPlan;
 
@@ -56,12 +56,12 @@ public class Move : MonoBehaviour
 		InitializeDesires ();
 
 		//myIntentions = new Dictionary<Intention, IntentionDetails> ();
-		myIntentions = new List<IntentionDetails> ();
+		//myIntentions = new List<IntentionDetails> ();
 		//FIXME no initial intentions???
 		//myIntentions [Intention.SEARCH_FOOD] = null;
-		//currentIntention = Intention.SEARCH_FOOD;
+		Vector3 moveRand = MoveRandomly ();
+		myCurrentIntention = new IntentionDetails(Intention.SEARCH_FOOD, 1f, moveRand);
 		myBeliefs = new Dictionary<Vector3,string> ();
-
 	}
 
 	/*
@@ -73,8 +73,9 @@ public class Move : MonoBehaviour
 		// Decreases Agent life over time
 		// Value can be a public variable
 		DecreaseLife(0.5f);
-		/* just a test
-		navMeshAgent.SetDestination (new Vector3 (0f, 0f, 0f));
+		// just a test
+		/*
+		navMeshAgent.SetDestination (new Vector3 (5f, 0f, -7.44f));
 		if (foodAhead) {
 			Debug.Log("Food Ahead");
 			PickFood ();
@@ -100,6 +101,7 @@ public class Move : MonoBehaviour
 				currentPlan = PlanNewPlan ();
 			}
 		}
+
 	}
 
 	/*
@@ -129,7 +131,7 @@ public class Move : MonoBehaviour
 			float get_food_multiplier = 0.9f;
 			//lower weight to get food if already carrying
 			if (HasFood ()) {
-				get_food_multiplier = 0.05f;
+				get_food_multiplier = 0.0f;
 			}
 			myDesires [Desire.GET_FOOD] = 1f * get_food_multiplier;
 		} else {
@@ -142,15 +144,17 @@ public class Move : MonoBehaviour
 				help_self_multiplier = 1f;
 			}
 			myDesires [Desire.HELP_SELF] = 1f * help_self_multiplier;
+		} else if (EnemyAhead ()) {
+			myDesires [Desire.HELP_SELF] = 1f;
 		} else {
-			myDesires [Desire.HELP_SELF] = 0.1f;
+			myDesires [Desire.HELP_SELF] = 0.0f;
 		}
 
 		if (ColonyBeingAttacked ()) {
 			if (AtBase ()) {
-				myDesires [Desire.DEFEND_COL] = 0.9f;
+				myDesires [Desire.DEFEND_COL] = 1.0f;
 			} else {
-				float defend_col_multiplier = 0.9f;
+				float defend_col_multiplier = 1.0f;
 				float number_of_ind_at_base = HowManyAtBase ();
 				//The more there are at base the less I want to go there
 				if (number_of_ind_at_base > 0) {
@@ -159,7 +163,7 @@ public class Move : MonoBehaviour
 				myDesires [Desire.DEFEND_COL] = 1f * defend_col_multiplier;
 			}
 		} else {
-			myDesires [Desire.DEFEND_COL] = 0;
+			myDesires [Desire.DEFEND_COL] = 0.0f;
 		}
 
 		if (FoodToPopulate ()) {
@@ -170,16 +174,18 @@ public class Move : MonoBehaviour
 				float number_of_ind_at_base = HowManyAtBase ();
 				if (number_of_ind_at_base < 2) {
 					populate_multiplier = 0.7f;
+				} else {
+					populate_multiplier = 0.2f;
 				}
 			}
 			myDesires [Desire.POPULATE] = 1f * populate_multiplier;
 		} else {
-			myDesires [Desire.POPULATE] = 0.1f;
+			myDesires [Desire.POPULATE] = 0.0f;
 		}
 
 		//FIXME 
 		//TODO HELP_OTHER, communication needed
-		myDesires [Desire.HELP_OTHER] = 0f;
+		myDesires [Desire.HELP_OTHER] = 0.0f;
 	}
 
 	void Filter () {
@@ -199,7 +205,16 @@ public class Move : MonoBehaviour
 			}
 		}
 
-		myIntentions = RetrieveIntentionsFromDesires (myBiggestDesires);
+		IList<IntentionDetails> myIntentions = RetrieveIntentionsFromDesires (myBiggestDesires);
+		myCurrentIntention = null;
+		float best_weight = 0.0f;
+		foreach(var intentionDetail in myIntentions) {
+			float weight = intentionDetail.Weight ();
+			if(weight > best_weight) {
+				best_weight = weight;
+				myCurrentIntention = intentionDetail;
+			}
+		}
 	}
 
 
@@ -213,8 +228,9 @@ public class Move : MonoBehaviour
 	 */
 
 	bool ColonyBeingAttacked () {
-		/*Colony myColComponent = myColony.gameObject.GetComponent<Colony> ();
-		return myColComponent.IsUnderAttack ();*/
+
+		//Colony myColComponent = myColony.gameObject.GetComponent<Colony> ();
+		//return myColComponent.IsUnderAttack ();
 		return myColonyComp.IsUnderAttack ();
 	}
 
@@ -222,6 +238,58 @@ public class Move : MonoBehaviour
 		/*Colony myColComponent = myColony.GetComponent<Colony> ();
 		return myColComponent.HasFoodToPopulate ();*/
 		return myColonyComp.HasFoodToPopulate ();
+	}
+
+	Vector3 ClosestFood () {
+		Vector3 closestFoodPosition = null;
+		float minDist = float.MaxValue;
+		foreach (Vector3 belief in myBeliefs) {
+			if(myBeliefs [belief] == "Food" || myBeliefs [belief] == "SpecFood") {
+				float distance_x = belief.x - this.transform.position.x;
+				float distance_z = belief.z - this.transform.position.z;
+				float distance_to_food = distance_x*distance_x + distance_z*distance_z;
+				if(distance_to_food < minDist) {
+					minDist = distance_to_food;
+					closestFoodPosition = belief;
+				}
+			}
+		}
+		return closestFoodPosition;
+
+	}
+
+	Vector3 ClosestFoodSource () {
+		Vector3 closestFoodSourcePosition = null;
+		float minDist = float.MaxValue;
+		foreach (Vector3 belief in myBeliefs) {
+			if(myBeliefs [belief] == "FoodSource") {
+				float distance_x = belief.x - this.transform.position.x;
+				float distance_z = belief.z - this.transform.position.z;
+				float distance_to_foodsource = distance_x*distance_x + distance_z*distance_z;
+				if(distance_to_foodsource < minDist) {
+					minDist = distance_to_foodsource;
+					closestFoodSourcePosition = belief;
+				}
+			}
+		}
+		return closestFoodSourcePosition;
+	}
+
+	Vector3 ClosestSpecialFood () {
+		Vector3 closestFoodSourcePosition = null;
+		float minDist = float.MaxValue;
+		foreach (Vector3 belief in myBeliefs) {
+			if(myBeliefs [belief] == "SpecFood") {
+				float distance_x = belief.x - this.transform.position.x;
+				float distance_z = belief.z - this.transform.position.z;
+				float distance_to_foodsource = distance_x*distance_x + distance_z*distance_z;
+				if(distance_to_foodsource < minDist) {
+					minDist = distance_to_foodsource;
+					closestFoodSourcePosition = belief;
+				}
+			}
+		}
+		return closestFoodSourcePosition;
 	}
 
 	float HowManyAtBase () {
@@ -236,33 +304,128 @@ public class Move : MonoBehaviour
 	}
 
 	bool KnowWhereFoodIs () {
-		return myBeliefs.ContainsValue ("Food");
+		return myBeliefs.ContainsValue ("Food") || myBeliefs.ContainsValue ("SpecFood");
+	}
+
+	bool KnowWhereSpecialFoodIs () {
+		return myBeliefs.ContainsValue ("SpecFood");
 	}
 
 	bool KnowWhereFoodSourceIs () {
 		return myBeliefs.ContainsValue ("FoodSource");
 	}
 
-	IList<IntentionDetails> RetrieveIntentionsFromDesires (IList<Desire> desires) {
-		IList<IntentionDetails> myCurrentIntentions = new List<IntentionDetails> () ;
+	bool KnowWhereObstacleIs () {
+		return myBeliefs.ContainsValue ("Wall");
+	}
 
+	IList<IntentionDetails> RetrieveIntentionsFromDesires (IList<Desire> desires) {
+
+		IList<IntentionDetails> myCurrentIntentions = new List<IntentionDetails> () ;
+	
 		foreach (var desire in desires) {
 			if (desire == Desire.HELP_SELF) {
-				if (HasFood()) {
-					IntentionDetails intention = new IntentionDetails(Intention.EAT_FOOD,1f,this.transform.position);
+				float eat_food_weight = 1f;
+				if (EnemyAhead ()) {
+					IntentionDetails intention = new IntentionDetails(Intention.ATTACK_MONSTER_AT,1f,enemy.transform.position);
 					myCurrentIntentions.Add (intention);
-				} else {
-					IntentionDetails intention = new IntentionDetails(Intention.GOTO_COL_AT,1f,myColonyPosition);
+					eat_food_weight = 0.5f;
+				}
+
+				if (HasFood()) {
+					IntentionDetails intention = new IntentionDetails(Intention.EAT_FOOD,1f*eat_food_weight,this.transform.position);
 					myCurrentIntentions.Add (intention);
 				}
+				float colony_multiplier = 0.9f;
+				Vector3 closestFood = ClosestFood ();
+				if (closestFood != null) {
+					float dist_food_x = closestFood.x - this.transform.position.x;
+					float dist_food_z = closestFood.z - this.transform.position.z;
+					float distance_to_food = dist_food_x*dist_food_x + dist_food_z*dist_food_z;
+					float dist_col_x = myColonyPosition.x - this.transform.position.x;
+					float dist_col_z = myColonyPosition.z - this.transform.position.z;
+					float distance_to_col = dist_col_x*dist_col_x + dist_col_z*dist_col_z;
+
+					float weight = 0.5f;
+					if (distance_to_food < distance_to_col) {
+						weight = 0.9;
+						colony_multiplier = 0.5f;
+					} 
+					IntentionDetails intention = new IntentionDetails(Intention.GOTO_COL_AT,0.9f,myColonyPosition);
+					myCurrentIntentions.Add (intention);
+				}
+				IntentionDetails intention_details = new IntentionDetails(Intention.GOTO_COL_AT,1f*closestFood,myColonyPosition);
+				myCurrentIntentions.Add (intention_details);
 			} else if (desire == Desire.POPULATE) {
-				//FIXME give position
-				//myCurrentIntentions.Add (Intention.POPULATE_AT);
+				float weight = 0.6f;
+				float dist_col_x = myColonyPosition.x - this.transform.position.x;
+				float dist_col_z = myColonyPosition.z - this.transform.position.z;
+				float distance_to_col = dist_col_x*dist_col_x + dist_col_z*dist_col_z;
+				float delta = 2f;
+				if (distance_to_col < delta || AtBase ()) {
+					weight = 0.9f;
+				}
+				Vector3 myPositon = this.transform.position;
+				IntentionDetails intention = new IntentionDetails(Intention.POPULATE_AT, weight, myColonyPosition);
+				myCurrentIntentions.Add (intention);
 			} else if (desire == Desire.DEFEND_COL) {
-				//FIXME give position
-				//myCurrentIntentions.Add (Intention.ATTACK_MONSTER_AT);
+				//FIXME improve!!!
+				float defend_col_multiplier = 1.0f;
+				float number_of_ind_at_base = HowManyAtBase ();
+				//The more there are at base the less I want to go there
+				if (number_of_ind_at_base > 0) {
+					defend_col_multiplier = defend_col_multiplier / number_of_ind_at_base;
+				}
+				IntentionDetails intention = new IntentionDetails(Intention.ATTACK_MONSTER_AT, 1f*defend_col_multiplier, myColonyPosition));
+				myCurrentIntentions.Add (intention);
 			} else if (desire == Desire.GET_FOOD) {
+				bool knowWhereFoodIs = KnowWhereFoodIs ();
+				bool knowWhereFoodSourceIs = KnowWhereFoodSourceIs ();
+				bool knowWhereSpecialFoodIs = KnowWhereSpecialFoodIs ();
+				bool knowWhereObsIs = KnowWhereObstacleIs ();
+
+				if (knowWhereSpecialFoodIs) {
+					float special_food_multiplier = 0.9f;
+					Vector3 closestSpecialFood = ClosestSpecialFood ();
+					bool canMakeToSpecFood = CanMakeItThere(closestSpecialFood);
+					if(canMakeToSpecFood) {
+						IntentionDetails intention = new IntentionDetails(Intention.GOTO_FOODSOURCE_AT, 1f*special_food_multiplier, closestSpecialFood);
+						myCurrentIntentions.Add (intention);
+						continue;
+					}
+				} 
+				if (knowWhereFoodSourceIs) {
+					float foodsource_mul = 0.9f;
+					Vector3 closestFoodSource = ClosestFoodSource ();
+					bool canMakeToFoodSource = CanMakeItThere(ClosestFoodSource);
+					if(canMakeToFoodSource) {
+						IntentionDetails intention = new IntentionDetails(Intention.GOTO_FOODSOURCE_AT, 1f*foodsource_mul, closestFoodSource);
+						myCurrentIntentions.Add (intention);
+						continue;
+					} 
+
+				} 
+				if (knowWhereFoodIs) {
+					float food_mul = 0.9f;
+					Vector3 closestFood = ClosestFood ();
+					bool canMakeToFood = CanMakeItThere(ClosestFood);
+					if(canMakeToFood) {
+						IntentionDetails intention = new IntentionDetails(Intention.GOTO_FOODSOURCE_AT, 1f*food_mul, closestFoodSource);
+						myCurrentIntentions.Add (intention);
+						continue;
+					} 
+
+				} 
+				if (KnowWhereObstacleIs ()){
+
+				} 
+				IntentionDetails intention = new IntentionDetails(Intention.SEARCH_FOOD, 0.9f, MoveRandomly());
+				myCurrentIntentions.Add (intention);
+
 				//myCurrentIntentions.Add (Intention.GET_FOOD_AT);
+			} else {
+				//desire == Desire.HELP_OTHER
+
 			}
 		}
 		return myCurrentIntentions;
@@ -459,14 +622,16 @@ public class Move : MonoBehaviour
 		}
 	}
 
-	void MoveRandomly () {
+	Vector3 MoveRandomly () {
 		int rand = Random.Range(1,1000);
 		if (rand <= 2) {
-			transform.Rotate (0f,-90f,0f);
+			//transform.Rotate (0f,-90f,0f);
+			return this.transform.position + Vector3.left*2;
 		} else if(rand <= 4) {
-			transform.Rotate (0f,90f,0f);
+			return this.transform.position + Vector3.right*2;
+				//transform.Rotate (0f,90f,0f);
 		} else {
-			MoveForward();
+			return this.transform.position + Vector3.forward*2;
 		}
 	}
 
