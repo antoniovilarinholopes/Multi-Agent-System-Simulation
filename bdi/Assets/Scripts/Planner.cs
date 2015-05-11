@@ -5,27 +5,34 @@ using System.Collections.Generic;
 
 public class Planner {
 	private Move.IntentionDetails intentionDetails;
-
 	private Vector3 colonyPosition;
 
-	public Planner(Vector3 colonyPosition) {
+	public Planner(Vector3 colonyPosition, Move.IntentionDetails intentionDetails) {
 		this.colonyPosition = colonyPosition;
+		this.intentionDetails = intentionDetails;
+	}
+
+	/*
+	public Planner(Vector3 colonyPosition, Move.IntentionDetails intentionDetails) {
+		this.colonyPosition = colonyPosition;
+		this.intentionDetails = intentionDetails;
 	}
 
 	public void UpdatePlanner(Move.IntentionDetails intentionDetails) {
 		this.intentionDetails = intentionDetails;
-	}
+	}*/
 
-	public Queue<PlanAction> Plan() {
-		//Num planner mais avancado em vez de fazer dequeue teria de ir a uma lista e escolher qual a proxima intencao
-		Queue<PlanAction> plan = new Queue<PlanAction> (); 
 
+	public Queue<PlanAction> Plan() { 
+		Queue<PlanAction> plan = new Queue<PlanAction> ();
 		Intention intention = intentionDetails.Intention();
 		if (intention == Intention.SEARCH_FOOD) {
+			plan.Enqueue(new PlanAction(Action.MOVE_TO, intentionDetails.Position()));
 		} else if (intention == Intention.GET_FOOD_AT) {
 			plan.Enqueue(new PlanAction(Action.MOVE_TO, intentionDetails.Position()));
 			plan.Enqueue(new PlanAction(Action.PICK_FOOD));
 			plan.Enqueue(new PlanAction(Action.MOVE_TO, colonyPosition));
+			plan.Enqueue(new PlanAction(Action.DROP_FOOD, colonyPosition));
 		} else if (intention == Intention.DESTROY_WALL_AT) {
 			plan.Enqueue(new PlanAction(Action.MOVE_TO, intentionDetails.Position()));
 			plan.Enqueue(new PlanAction(Action.DESTROY_WALL));
@@ -42,7 +49,8 @@ public class Planner {
 		} else if (intention == Intention.HELP_OTHER_AT) {
 			plan.Enqueue(new PlanAction(Action.MOVE_TO, intentionDetails.Position()));
 		} else if (intention == Intention.EAT_FOOD) {
-			plan.Enqueue(new PlanAction(Action.MOVE_TO, colonyPosition));
+			//FIXME is moving to col really needed? Maybe
+			//plan.Enqueue(new PlanAction(Action.MOVE_TO, colonyPosition));
 			plan.Enqueue(new PlanAction(Action.EAT));
 		}
 
@@ -62,4 +70,13 @@ public class PlanAction {
 		this.action = action;
 		this.position = position;
 	}
+
+	public Action Action () {
+		return this.action;
+	}
+
+	public Vector3 Position () {
+		return this.position;
+	}
+
 }

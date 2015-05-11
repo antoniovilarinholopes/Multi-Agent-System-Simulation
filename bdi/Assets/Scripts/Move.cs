@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public enum Desire {GET_FOOD, DEFEND_COL, HELP_OTHER, HELP_SELF, POPULATE}
 public enum Intention {SEARCH_FOOD, GET_FOOD_AT, DESTROY_WALL_AT, GOTO_FOODSOURCE_AT, ATTACK_MONSTER_AT, GOTO_COL_AT, POPULATE_AT, HELP_OTHER_AT, EAT_FOOD}
-public enum Action {MOVE_TO, ROTATE_TO, EAT, FIGHT_MONSTER, POPULATE, DESTROY_WALL, PICK_FOOD, DROP_FOOD}
+public enum Action {MOVE_TO, EAT, FIGHT_MONSTER, POPULATE, DESTROY_WALL, PICK_FOOD, DROP_FOOD}
 
 public class Move : MonoBehaviour
 {	
@@ -29,10 +29,12 @@ public class Move : MonoBehaviour
 	//IList<Desire> myDesires; 
 	Dictionary<Desire, float> myDesires;
 	//Dictionary<Intention, IntentionDetails> myIntentions;
-	IList<IntentionDetails> myIntentions;
+	//IList<IntentionDetails> myIntentions;
 	IntentionDetails myCurrentIntention;
 	Dictionary<Vector3, string> myBeliefs;
-	Plan currentPlan;
+	bool currentActionHasEnded;
+	PlanAction currentAction;
+	Queue<PlanAction> currentPlan;
 
 
 	void Awake () {
@@ -49,6 +51,8 @@ public class Move : MonoBehaviour
 		isObstacleOnSight = false;
 		isSpecFoodOnSight = false;
 		currentPlan = null;
+		currentActionHasEnded = false;
+		currentAction = null;
 		myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
 
 		myDesires = new Dictionary<Desire,float> ();
@@ -84,21 +88,28 @@ public class Move : MonoBehaviour
 		//single commitment
 
 		if (currentPlan == null) {
-			currentPlan = null;
 			Brf ();
 			Options ();
 			Filter ();
-			currentPlan = PlanNewPlan ();
-			//currentPlan.Execute ();
+			Debug.Log (myCurrentIntention.Intention ());
+			Planner planner = CreateNewPlan ();
+			currentPlan = planner.Plan ();
+			return;
 		} else {
-			if(currentPlan.IsEmpty () || Succeeded () || Impossible ()) {
+			if(PlanIsEmpty () || Succeeded () || Impossible ()) {
 				currentPlan = null;
+				currentAction = null;
+				currentActionHasEnded = false;
 				return;
 			}
-			currentPlan.Execute ();
+			ExecuteAction ();
 			Brf ();
 			if(!Sound ()) {
-				currentPlan = PlanNewPlan ();
+				Planner planner = CreateNewPlan ();
+				currentPlan = planner.Plan ();
+				currentAction = null;
+				currentActionHasEnded = false;
+				return;
 			}
 		}
 
@@ -107,6 +118,13 @@ public class Move : MonoBehaviour
 	/*
 	 * BDI
 	 */
+
+
+
+	Planner CreateNewPlan () {
+		//uses myBeliefs and myIntentions
+		return new Planner (myColonyPosition, myCurrentIntention);
+	}
 
 	void Brf () {
 		// The beliefs are constantly updated with the IsOnSight.
@@ -216,12 +234,7 @@ public class Move : MonoBehaviour
 			}
 		}
 	}
-
-
-	Plan PlanNewPlan () {
-		//uses myBeliefs and myIntentions
-		return new Plan (null, this.gameObject);
-	}
+	
 
 	/*
 	 *BDI aux
@@ -232,8 +245,10 @@ public class Move : MonoBehaviour
 	}
 	
 
+	//FIXME
 	bool CanMakeItThere(Vector3 there) {
-		return true;
+		float distance_to_object = DistanceBetweenMeAndPoint (there);
+		return (HasHighLife () && distance_to_object <= 60) || (distance_to_object <= 20 && !HasLowLife ());
 	}
 
 	Vector3 ClosestFood () {
@@ -310,12 +325,74 @@ public class Move : MonoBehaviour
 		return closestFoodSourcePosition;
 	}
 
+	bool CurrentActionHasEnded () {
+		return currentActionHasEnded;
+	}
+
 	float DistanceBetweenMeAndPoint (Vector3 target) {
 		float distance_x = target.x - this.transform.position.x;
 		float distance_z = target.z - this.transform.position.z;
 		return distance_x*distance_x + distance_z*distance_z;
 	}
-	
+
+
+	void ExecuteAction () {
+		if (currentAction == null && currentPlan.Count > 0) {
+			currentAction = currentPlan.Dequeue ();
+		} else {
+			if (CurrentActionHasEnded () && currentPlan.Count == 0) {
+				currentAction = null;
+				return;
+			} else if(CurrentActionHasEnded () && currentPlan.Count > 0) {
+				currentAction = currentPlan.Dequeue ();
+			}
+		}
+		Action action = currentAction.Action ();
+		if (action == Action.MOVE_TO) {
+			//Debug.Log ("myposition " + this.transform.position + " where to" + currentAction.Position ());
+			navMeshAgent.SetDestination (currentAction.Position ());
+			if (this.transform.position == currentAction.Position ()) {
+				currentActionHasEnded = true;
+			}
+		} else if (action == Action.EAT && HasFood ()) {
+			hasFood = false;
+			string food_tag = food.tag;
+			Destroy (food);
+			food = null;
+			float eat_food_val = 10.0f;
+			if (food_tag == "SpecFood") {
+				eat_food_val = 15.0f;
+			}
+			EatFood (eat_food_val);
+			currentActionHasEnded = true;
+		} else if (action == Action.PICK_FOOD) {
+			if (FoodAhead ()) {
+				this.PickFood ();
+			}
+			currentActionHasEnded = true;
+		} else if (action == Action.DROP_FOOD) {
+			if (HasFood () && AtBase ()) {
+				this.DropFood ();
+			}
+			currentActionHasEnded = true;
+		} else if (action == Action.POPULATE) {
+			//
+		} else if (action == Action.DESTROY_WALL) {
+			if (ObstacleAhead ()) {
+				this.HitWall (); 
+			} else {
+				currentActionHasEnded = true;
+			}
+		} else if (action == Action.FIGHT_MONSTER) {
+			if (EnemyAhead ()) {
+				this.HitEnemy ();
+			} else {
+				currentActionHasEnded = true;
+			}
+		}
+		
+	}
+
 	bool FoodToPopulate () {
 		return myColonyComp.HasFoodToPopulate ();
 	}
@@ -345,13 +422,17 @@ public class Move : MonoBehaviour
 		return myBeliefs.ContainsValue ("Wall");
 	}
 
+	bool PlanIsEmpty () {
+		return currentPlan.Count == 0 && currentAction == null;
+	}
+
 	IList<IntentionDetails> RetrieveIntentionsFromDesires (IList<Desire> desires) {
 
 		IList<IntentionDetails> myCurrentIntentions = new List<IntentionDetails> () ;
 	
 		foreach (var desire in desires) {
 			if (desire == Desire.HELP_SELF) {
-				float eat_food_weight = 1f;
+				float eat_food_weight = 1.0f;
 				if (EnemyAhead ()) {
 					IntentionDetails intention = new IntentionDetails(Intention.ATTACK_MONSTER_AT,1f,enemy.transform.position);
 					myCurrentIntentions.Add (intention);
@@ -359,7 +440,7 @@ public class Move : MonoBehaviour
 				}
 
 				if (HasFood()) {
-					IntentionDetails intention = new IntentionDetails(Intention.EAT_FOOD,1f*eat_food_weight,this.transform.position);
+					IntentionDetails intention = new IntentionDetails(Intention.EAT_FOOD,1.0f*eat_food_weight,this.transform.position);
 					myCurrentIntentions.Add (intention);
 				}
 				float colony_multiplier = 0.9f;
@@ -375,12 +456,13 @@ public class Move : MonoBehaviour
 					*/
 					float distance_to_food = DistanceBetweenMeAndPoint(closestFood);
 					float distance_to_col = DistanceBetweenMeAndPoint(myColonyPosition);
-					float weight = 0.5f;
+					float weight = 0.0f;
 					if (distance_to_food < distance_to_col) {
 						weight = 0.9f;
 						colony_multiplier = 0.5f;
 					} 
-					IntentionDetails intention = new IntentionDetails(Intention.GOTO_COL_AT,1.0f*weight,myColonyPosition);
+					//FIXME!!! Special case must be reviewed
+					IntentionDetails intention = new IntentionDetails(Intention.GET_FOOD_AT,1.0f*weight,myColonyPosition);
 					myCurrentIntentions.Add (intention);
 					continue;
 				}
@@ -473,13 +555,14 @@ public class Move : MonoBehaviour
 	}
 
 	bool Sound () {
-		//has the plan gone wrong?
-		return false;
+		//is the plan going right?
+		return true;
 	}
 
+	//FIXME
 	bool Succeeded () {
 		//have i done what i wanted to?
-		return true;
+		return PlanIsEmpty ();
 	}
 
 
@@ -512,44 +595,7 @@ public class Move : MonoBehaviour
 		}
 
 	}
-
-	//FIXME Template for now, must be reviewd!!!
-	class Plan {
-		IList<PlanAction> steps;
-		GameObject ind;
-		
-		public Plan (IList<PlanAction> steps, GameObject ind) {
-			this.steps = steps;
-			this.ind = ind;
-		}
-		
-		public bool IsEmpty () {
-			if (steps == null) {
-				return true;
-			}
-			return steps.Count == 0;
-		}
-		
-		public PlanAction Head () {
-			if (steps == null) {
-				return null;
-			}
-			return steps[0];
-		}
-		
-		public void Execute () {
-			if (steps == null) {
-				return;
-			}
-			var step = Head ();
-			//FIXME make ind execute step
-			steps.RemoveAt (0);
-		}
-		
-	}
-
-
-
+	
 
 	/*
 	 * Sensors
@@ -667,14 +713,15 @@ public class Move : MonoBehaviour
 
 	Vector3 MoveRandomly () {
 		int rand = Random.Range(1,1000);
+		float multiplier = 1.0f;
 		if (rand <= 2) {
 			//transform.Rotate (0f,-90f,0f);
-			return this.transform.position + Vector3.left*2;
+			return this.transform.position + Vector3.left*multiplier;
 		} else if(rand <= 4) {
-			return this.transform.position + Vector3.right*2;
+			return this.transform.position + Vector3.right*multiplier;
 				//transform.Rotate (0f,90f,0f);
 		} else {
-			return this.transform.position + Vector3.forward*2;
+			return this.transform.position + Vector3.forward*multiplier;
 		}
 	}
 
