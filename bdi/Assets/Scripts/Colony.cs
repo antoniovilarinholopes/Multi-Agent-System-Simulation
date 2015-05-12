@@ -33,7 +33,8 @@ public class Colony : MonoBehaviour {
 			playerTag = "PlayerB";
 			colonyLetter = "B";
 		}
-		for(int i = 0; i < 8; i++) {
+
+		for(int i = 0; i < 1; i++) {
 			maxAttempts = 0;
 			// TODO: Ver clearSpace
 			do {

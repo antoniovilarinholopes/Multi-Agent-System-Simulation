@@ -26,10 +26,7 @@ public class Move : MonoBehaviour
 	private float hitRate = 2f;
 	private const float SPEED = 10f;
 	NavMeshAgent navMeshAgent;
-	//IList<Desire> myDesires; 
 	Dictionary<Desire, float> myDesires;
-	//Dictionary<Intention, IntentionDetails> myIntentions;
-	//IList<IntentionDetails> myIntentions;
 	IntentionDetails myCurrentIntention;
 	Dictionary<Vector3, string> myBeliefs;
 	bool currentActionHasEnded;
@@ -56,16 +53,12 @@ public class Move : MonoBehaviour
 		myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
 
 		myDesires = new Dictionary<Desire,float> ();
-		//myDesires = new List<Desire> ();
 		InitializeDesires ();
 
-		//myIntentions = new Dictionary<Intention, IntentionDetails> ();
-		//myIntentions = new List<IntentionDetails> ();
-		//FIXME no initial intentions???
-		//myIntentions [Intention.SEARCH_FOOD] = null;
 		Vector3 moveRand = MoveRandomly ();
 		myCurrentIntention = new IntentionDetails(Intention.SEARCH_FOOD, 1f, moveRand);
 		myBeliefs = new Dictionary<Vector3,string> ();
+		//Debug.Log (this.transform.position);
 	}
 
 	/*
@@ -91,25 +84,27 @@ public class Move : MonoBehaviour
 			Brf ();
 			Options ();
 			Filter ();
-			Debug.Log (myCurrentIntention.Intention ());
 			Planner planner = CreateNewPlan ();
 			currentPlan = planner.Plan ();
-			return;
+			//Debug.Log(currentPlan.Count);
+			//return;
 		} else {
 			if(PlanIsEmpty () || Succeeded () || Impossible ()) {
+				Debug.Log (currentAction);
 				currentPlan = null;
 				currentAction = null;
 				currentActionHasEnded = false;
-				return;
+				//return;
 			}
 			ExecuteAction ();
+			//Debug.Log(currentPlan.Count);
 			Brf ();
 			if(!Sound ()) {
 				Planner planner = CreateNewPlan ();
 				currentPlan = planner.Plan ();
 				currentAction = null;
 				currentActionHasEnded = false;
-				return;
+				//return;
 			}
 		}
 
@@ -337,6 +332,10 @@ public class Move : MonoBehaviour
 
 
 	void ExecuteAction () {
+		//FIXME See Fred
+		if (currentPlan == null) {
+			return;
+		}
 		if (currentAction == null && currentPlan.Count > 0) {
 			currentAction = currentPlan.Dequeue ();
 		} else {
@@ -349,11 +348,15 @@ public class Move : MonoBehaviour
 		}
 		Action action = currentAction.Action ();
 		if (action == Action.MOVE_TO) {
-			//Debug.Log ("myposition " + this.transform.position + " where to" + currentAction.Position ());
-			navMeshAgent.SetDestination (currentAction.Position ());
-			if (this.transform.position == currentAction.Position ()) {
+			Vector3 targetPosition = currentAction.Position ();
+			bool equal_x = this.transform.position.x == targetPosition.x;
+			bool equal_z = this.transform.position.z == targetPosition.z;
+			if (equal_x && equal_z) {
+				Debug.Log ("Equal Position");
 				currentActionHasEnded = true;
+				return;
 			}
+			navMeshAgent.SetDestination (currentAction.Position ());
 		} else if (action == Action.EAT && HasFood ()) {
 			hasFood = false;
 			string food_tag = food.tag;
@@ -377,6 +380,7 @@ public class Move : MonoBehaviour
 			currentActionHasEnded = true;
 		} else if (action == Action.POPULATE) {
 			//
+			currentActionHasEnded = true;
 		} else if (action == Action.DESTROY_WALL) {
 			if (ObstacleAhead ()) {
 				this.HitWall (); 
@@ -423,7 +427,7 @@ public class Move : MonoBehaviour
 	}
 
 	bool PlanIsEmpty () {
-		return currentPlan.Count == 0 && currentAction == null;
+		return currentPlan.Count == 0 && CurrentActionHasEnded ();
 	}
 
 	IList<IntentionDetails> RetrieveIntentionsFromDesires (IList<Desire> desires) {
@@ -713,7 +717,7 @@ public class Move : MonoBehaviour
 
 	Vector3 MoveRandomly () {
 		int rand = Random.Range(1,1000);
-		float multiplier = 1.0f;
+		float multiplier = 3.0f;
 		if (rand <= 2) {
 			//transform.Rotate (0f,-90f,0f);
 			return this.transform.position + Vector3.left*multiplier;
