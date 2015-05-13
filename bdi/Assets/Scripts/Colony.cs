@@ -6,7 +6,7 @@ public class Colony : MonoBehaviour {
 	
 	public GameObject prefabInd;
 	IList<GameObject> individuals;
-	float foodCount;
+	public float foodCount;
 	const float foodMultiplier = 5f;
 	const float specialFoodMultiplier = 10f;
 	const float timeToRemoveHealth = 10f;
@@ -197,7 +197,7 @@ public class Colony : MonoBehaviour {
 		}
 	}
 
-	public void Broadcast(string messageType, string tag, Vector3 obj) {
+	public void Broadcast(SpeechAtc speechAct, string tag, Vector3 obj) {
 		IList<GameObject> indList = new List<GameObject>(individuals);
 		foreach(GameObject ind in indList) {
 			if (ind == null) {
@@ -205,10 +205,12 @@ public class Colony : MonoBehaviour {
 				continue;
 			}
 			Move moveComp = ind.GetComponent<Move>();
-			switch (messageType) {
-				case "Inform":
+			switch (speechAct) {
+				case SpeechAtc.INFORM_ADD:
 					moveComp.AddToBeliefs(tag, obj);
 					break;
+			//case SpeechAtc.INFORM_REMOVE:
+			//	break;
 			}
 		}
 	}

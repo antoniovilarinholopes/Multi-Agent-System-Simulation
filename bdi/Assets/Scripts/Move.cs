@@ -6,6 +6,8 @@ using System.Collections.Generic;
 public enum Desire {GET_FOOD, DEFEND_COL, HELP_OTHER, HELP_SELF, POPULATE}
 public enum Intention {SEARCH_FOOD, GET_FOOD_AT, DESTROY_WALL_AT, GOTO_FOODSOURCE_AT, ATTACK_MONSTER_AT, GOTO_COL_AT, POPULATE_AT, HELP_OTHER_AT, EAT_FOOD}
 public enum Action {MOVE_TO, EAT, FIGHT_MONSTER, POPULATE, DESTROY_WALL, PICK_FOOD, DROP_FOOD}
+public enum SpeechAtc {INFORM_ADD, INFORM_REMOVE, REQUEST_ADD}
+
 
 public class Move : MonoBehaviour
 {	
@@ -62,7 +64,6 @@ public class Move : MonoBehaviour
 		Vector3 moveRand = MoveRandomly ();
 		myCurrentIntention = new IntentionDetails(Intention.SEARCH_FOOD, 1f, moveRand);
 		myBeliefs = new Dictionary<Vector3,string> ();
-		//Debug.Log (this.transform.position);
 	}
 
 	/*
@@ -88,17 +89,18 @@ public class Move : MonoBehaviour
 			Brf ();
 			Options ();
 			Filter ();
+			//Debug.Log (myCurrentIntention.Intention ());
 			Planner planner = CreateNewPlan ();
 			currentPlan = planner.Plan ();
-			//Debug.Log(currentPlan.Count);
-			//return;
 		} else {
 			if(PlanIsEmpty () || Succeeded () || Impossible ()) {
-				Debug.Log (currentAction);
 				currentPlan = null;
 				currentAction = null;
 				currentActionHasEnded = false;
 				//return;
+			}
+			if(currentAction != null && currentAction.Action () != Action.MOVE_TO) {
+				Debug.Log(currentAction.Action ());
 			}
 			ExecuteAction ();
 			//Debug.Log(currentPlan.Count);
@@ -246,8 +248,8 @@ public class Move : MonoBehaviour
 
 	//FIXME
 	bool CanMakeItThere(Vector3 there) {
-		float distance_to_object = DistanceBetweenMeAndPoint (there);
-		return (HasHighLife () && distance_to_object <= 60) || (distance_to_object <= 20 && !HasLowLife ());
+		float distance_to_object = Mathf.Sqrt(DistanceBetweenMeAndPoint (there));
+		return (HasHighLife () && distance_to_object <= 60) || (distance_to_object <= 40 && !HasLowLife ());
 	}
 
 	Vector3 ClosestFood () {
@@ -255,9 +257,6 @@ public class Move : MonoBehaviour
 		float minDist = float.MaxValue;
 		foreach (Vector3 belief in myBeliefs.Keys) {
 			if(myBeliefs [belief] == "Food" || myBeliefs [belief] == "SpecFood") {
-				/*float distance_x = belief.x - this.transform.position.x;
-				float distance_z = belief.z - this.transform.position.z;
-				float distance_to_food = distance_x*distance_x + distance_z*distance_z;*/
 				float distance_to_food = DistanceBetweenMeAndPoint(belief);
 				if(distance_to_food < minDist) {
 					minDist = distance_to_food;
@@ -311,9 +310,6 @@ public class Move : MonoBehaviour
 		float minDist = float.MaxValue;
 		foreach (Vector3 belief in myBeliefs.Keys) {
 			if(myBeliefs [belief] == "SpecFood") {
-				/*float distance_x = belief.x - this.transform.position.x;
-				float distance_z = belief.z - this.transform.position.z;
-				float distance_to_foodsource = distance_x*distance_x + distance_z*distance_z;*/
 				float distance_to_foodsource = DistanceBetweenMeAndPoint(belief);
 				if(distance_to_foodsource < minDist) {
 					minDist = distance_to_foodsource;
@@ -336,7 +332,8 @@ public class Move : MonoBehaviour
 
 
 	void ExecuteAction () {
-		//FIXME See Fred
+		//FIXME
+
 		if (currentPlan == null) {
 			return;
 		}
@@ -355,8 +352,9 @@ public class Move : MonoBehaviour
 			Vector3 targetPosition = currentAction.Position ();
 			bool equal_x = this.transform.position.x == targetPosition.x;
 			bool equal_z = this.transform.position.z == targetPosition.z;
-			if (equal_x && equal_z) {
-				Debug.Log ("Equal Position");
+			float distance_to_target = Mathf.Sqrt(DistanceBetweenMeAndPoint(targetPosition));
+			bool isSomethingAhead = IsSomethingAhead();
+			if ((equal_x && equal_z) || (isSomethingAhead && distance_to_target <= 1f)) {
 				currentActionHasEnded = true;
 				return;
 			}
@@ -378,6 +376,8 @@ public class Move : MonoBehaviour
 			}
 			currentActionHasEnded = true;
 		} else if (action == Action.DROP_FOOD) {
+			Debug.Log(myColonyPosition);
+			Debug.Log(this.transform.position);
 			if (HasFood () && AtBase ()) {
 				this.DropFood ();
 			}
@@ -455,13 +455,6 @@ public class Move : MonoBehaviour
 
 				if (KnowWhereFoodIs ()) {
 					Vector3 closestFood = ClosestFood ();
-					/*float dist_food_x = closestFood.x - this.transform.position.x;
-					float dist_food_z = closestFood.z - this.transform.position.z;
-					float distance_to_food = dist_food_x*dist_food_x + dist_food_z*dist_food_z;
-					float dist_col_x = myColonyPosition.x - this.transform.position.x;
-					float dist_col_z = myColonyPosition.z - this.transform.position.z;
-					float distance_to_col = dist_col_x*dist_col_x + dist_col_z*dist_col_z;
-					*/
 					float distance_to_food = DistanceBetweenMeAndPoint(closestFood);
 					float distance_to_col = DistanceBetweenMeAndPoint(myColonyPosition);
 					float weight = 0.0f;
@@ -654,6 +647,10 @@ public class Move : MonoBehaviour
 	bool HasHighLife () {
 		return health >= 18f;
 	}
+
+	bool IsSomethingAhead() {
+		return ObstacleAhead () || EnemyAhead () || FoodAhead ();
+	}
 	
 	bool ObstacleOnSight ()	{
 		return isObstacleOnSight;
@@ -721,7 +718,7 @@ public class Move : MonoBehaviour
 
 	Vector3 MoveRandomly () {
 		int rand = Random.Range(1,1000);
-		float multiplier = 3.0f;
+		float multiplier = 1.0f;
 		if (rand <= 2) {
 			//transform.Rotate (0f,-90f,0f);
 			return this.transform.position + Vector3.left*multiplier;
@@ -878,16 +875,17 @@ public class Move : MonoBehaviour
 	public void SetMyColony (GameObject myColony) {
 		this.myColony = myColony;
 		myColonyComp = myColony.gameObject.GetComponent<Colony> ();
-		Debug.Log (myColonyComp.IsUnderAttack ());
+		commModule.SetColonyComponent (myColonyComp);
 	}
 
 	public void SetIsFoodSourceOnSight (bool isFoodSourceOnSight, GameObject foodSourceOnSight){
 		this.isFoodSourceOnSight = isFoodSourceOnSight;
 		this.foodSourceOnSight = foodSourceOnSight;
 		if(isFoodSourceOnSight) {
-			Vector3 foodSourcePosition = new Vector3(foodSourceOnSight.x, foodSourceOnSight.y, foodSourceOnSight.z);
+			//Vector3 foodSourcePosition = new Vector3(foodSourceOnSight.x, foodSourceOnSight.y, foodSourceOnSight.z);
+			Vector3 foodSourcePosition = foodOnSight.transform.position;
 			if (!myBeliefs.ContainsKey(foodSourcePosition)) {
-				commModule.Broadcast("Inform", "FoodSource", foodSourcePosition);
+				commModule.Broadcast(SpeechAtc.INFORM_ADD, "FoodSource", foodSourcePosition);
 				AddToBeliefs("FoodSource", foodSourcePosition);
 			}
 		}
@@ -897,17 +895,19 @@ public class Move : MonoBehaviour
 		this.isFoodOnSight = isFoodOnSight;
 		this.foodOnSight = foodOnSight;
 		if(isFoodOnSight) {
-			Vector3 foodPosition = new Vector3(foodOnSight.transform.position.x, foodOnSight.transform.position.y, foodOnSight.transform.position.z);
+			//Vector3 foodPosition = new Vector3(foodOnSight.transform.position.x, foodOnSight.transform.position.y, foodOnSight.transform.position.z);
+			Vector3 foodPosition = foodOnSight.transform.position;
 			if(!myBeliefs.ContainsKey(foodPosition)) {
-				commModule.Broadcast("Inform", "Food", foodPosition);
+				commModule.Broadcast(SpeechAtc.INFORM_ADD, "Food", foodPosition);
 				AddToBeliefs("Food", foodPosition);
 			}
-			AddToBeliefs("Food", foodPosition);
+			//AddToBeliefs("Food", foodPosition);
 		}
 	}
 
 	public void AddToBeliefs(string name, Vector3 position) {
-		if(!myBeliefs.ContainsKey(position)) {
+		bool hasBelief = myBeliefs.ContainsKey(position) && myBeliefs [position] == name;
+		if(!hasBelief) {
 			myBeliefs [position] = name;
 		}
 	}
@@ -916,9 +916,10 @@ public class Move : MonoBehaviour
 		this.isSpecFoodOnSight = isSpecFoodOnSight;
 		this.specFoodOnSight = specFoodOnSight;
 		if(isSpecFoodOnSight) {
-			Vector3 foodPosition = new Vector3(specFoodOnSight.transform.position.x, specFoodOnSight.transform.position.y, specFoodOnSight.transform.position.z);
+			//Vector3 foodPosition = new Vector3(specFoodOnSight.transform.position.x, specFoodOnSight.transform.position.y, specFoodOnSight.transform.position.z);
+			Vector3 foodPosition = food.transform.position;
 			if(!myBeliefs.ContainsKey(foodPosition)) {
-				commModule.Broadcast("Inform", "SpecFood", foodPosition);
+				commModule.Broadcast(SpeechAtc.INFORM_ADD, "SpecFood", foodPosition);
 				AddToBeliefs("SpecFood", foodPosition);
 			}
 		}

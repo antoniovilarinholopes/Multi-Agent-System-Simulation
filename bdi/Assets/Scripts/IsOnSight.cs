@@ -24,9 +24,7 @@ public class IsOnSight : MonoBehaviour {
 		//if (Physics.Raycast (transform.parent.position + transform.parent.up, direction.normalized, out hit, 15f)) {
 		if (Physics.Raycast (transform.position + transform.up, direction.normalized, out hit, 15f)) {
 		
-			// ... and if the raycast hits the player...
-			//Debug.Log("Tag " + collider.tag);
-			//Debug.Log("Tag seen " + hit.collider.gameObject.tag);
+			// ... and if the raycast hits the something..
 			/*if(collider.tag == "Wall") {
 				bool t = collider.gameObject == hit.collider.gameObject;
 				return hit.collider.gameObject.tag == collider.tag && collider.gameObject == hit.collider.gameObject;
@@ -50,7 +48,7 @@ public class IsOnSight : MonoBehaviour {
 			}
 		} else if (collider.tag == "Food") {
 			if (IsObjectOnSight (collider)) {
-				Debug.Log("Food on Sight");
+				//Debug.Log("Food on Sight");
 				myRobot.SetIsFoodOnSight (true, collider.gameObject);
 			} else {
 				myRobot.SetIsFoodOnSight (false, null);
