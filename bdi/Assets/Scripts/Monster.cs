@@ -3,6 +3,8 @@ using System.Collections;
 
 public class Monster : MonoBehaviour {
 
+	public const float SPEED = 2.0f;
+
 	private bool agentAhead;
 	private GameObject agent;
 	private float hitPoints = 12f;
@@ -20,6 +22,19 @@ public class Monster : MonoBehaviour {
 	void Update () {
 		if (AgentAhead ()) {
 			HitAgent();
+		} else {
+			MoveRandomly();
+		}
+	}
+
+	void MoveRandomly () {
+		int rand = Random.Range(1,1000);
+		if (rand <= 2) {
+			transform.Rotate (0f,-90f,0f);
+		} else if(rand <= 4) {
+			transform.Rotate (0f,90f,0f);
+		} else {
+			transform.Translate (Vector3.forward * Time.deltaTime * SPEED, Space.Self);
 		}
 	}
 	
