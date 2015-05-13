@@ -33,6 +33,8 @@ public class Move : MonoBehaviour
 	PlanAction currentAction;
 	Queue<PlanAction> currentPlan;
 
+	ComunicationModule commModule;
+
 
 	void Awake () {
 		navMeshAgent = this.GetComponent<NavMeshAgent> ();
@@ -54,6 +56,8 @@ public class Move : MonoBehaviour
 
 		myDesires = new Dictionary<Desire,float> ();
 		InitializeDesires ();
+
+		commModule = GetComponent<ComunicationModule>();
 
 		Vector3 moveRand = MoveRandomly ();
 		myCurrentIntention = new IntentionDetails(Intention.SEARCH_FOOD, 1f, moveRand);
@@ -881,9 +885,10 @@ public class Move : MonoBehaviour
 		this.isFoodSourceOnSight = isFoodSourceOnSight;
 		this.foodSourceOnSight = foodSourceOnSight;
 		if(isFoodSourceOnSight) {
-			Vector3 foodSourcePosition = new Vector3(foodSourceOnSight.transform.position.x, foodSourceOnSight.transform.position.y, foodSourceOnSight.transform.position.z);
-			if(!myBeliefs.ContainsKey(foodSourcePosition)) {
-				myBeliefs [foodSourcePosition] = "FoodSource";
+			Vector3 foodSourcePosition = new Vector3(foodSourceOnSight.x, foodSourceOnSight.y, foodSourceOnSight.z);
+			if (!myBeliefs.ContainsKey(foodSourcePosition)) {
+				commModule.Broadcast("Inform", "FoodSource", foodSourcePosition);
+				AddToBeliefs("FoodSource", foodSourcePosition);
 			}
 		}
 	}
@@ -894,8 +899,16 @@ public class Move : MonoBehaviour
 		if(isFoodOnSight) {
 			Vector3 foodPosition = new Vector3(foodOnSight.transform.position.x, foodOnSight.transform.position.y, foodOnSight.transform.position.z);
 			if(!myBeliefs.ContainsKey(foodPosition)) {
-				myBeliefs[foodPosition] = "Food";
+				commModule.Broadcast("Inform", "Food", foodPosition);
+				AddToBeliefs("Food", foodPosition);
 			}
+			AddToBeliefs("Food", foodPosition);
+		}
+	}
+
+	public void AddToBeliefs(string name, Vector3 position) {
+		if(!myBeliefs.ContainsKey(position)) {
+			myBeliefs [position] = name;
 		}
 	}
 
@@ -905,7 +918,8 @@ public class Move : MonoBehaviour
 		if(isSpecFoodOnSight) {
 			Vector3 foodPosition = new Vector3(specFoodOnSight.transform.position.x, specFoodOnSight.transform.position.y, specFoodOnSight.transform.position.z);
 			if(!myBeliefs.ContainsKey(foodPosition)) {
-				myBeliefs[foodPosition] = "SpecFood";
+				commModule.Broadcast("Inform", "SpecFood", foodPosition);
+				AddToBeliefs("SpecFood", foodPosition);
 			}
 		}
 	}

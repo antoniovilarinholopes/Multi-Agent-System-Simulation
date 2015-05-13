@@ -197,4 +197,20 @@ public class Colony : MonoBehaviour {
 		}
 	}
 
+	public void Broadcast(string messageType, string tag, Vector3 obj) {
+		IList<GameObject> indList = new List<GameObject>(individuals);
+		foreach(GameObject ind in indList) {
+			if (ind == null) {
+				individuals.Remove(ind);
+				continue;
+			}
+			Move moveComp = ind.GetComponent<Move>();
+			switch (messageType) {
+				case "Inform":
+					moveComp.AddToBeliefs(tag, obj);
+					break;
+			}
+		}
+	}
+
 }
