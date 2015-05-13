@@ -75,21 +75,18 @@ public class Move : MonoBehaviour
 		// Decreases Agent life over time
 		// Value can be a public variable
 		DecreaseLife(0.5f);
-		// just a test
-		/*
-		navMeshAgent.SetDestination (new Vector3 (5f, 0f, -7.44f));
-		if (foodAhead) {
-			Debug.Log("Food Ahead");
-			PickFood ();
-		}*/
-		//p <- nextPercetp = what is seeing
 		//single commitment
+
+		foreach (var belief in myBeliefs.Keys) {
+			Debug.Log (myBeliefs[belief] + ":" + belief);
+		}
+		Debug.Log ("----");
 
 		if (currentPlan == null) {
 			Brf ();
 			Options ();
 			Filter ();
-			//Debug.Log (myCurrentIntention.Intention ());
+
 			Planner planner = CreateNewPlan ();
 			currentPlan = planner.Plan ();
 		} else {
@@ -97,10 +94,7 @@ public class Move : MonoBehaviour
 				currentPlan = null;
 				currentAction = null;
 				currentActionHasEnded = false;
-				//return;
-			}
-			if(currentAction != null && currentAction.Action () != Action.MOVE_TO) {
-				Debug.Log(currentAction.Action ());
+				return;
 			}
 			ExecuteAction ();
 			//Debug.Log(currentPlan.Count);
@@ -332,11 +326,7 @@ public class Move : MonoBehaviour
 
 
 	void ExecuteAction () {
-		//FIXME
 
-		if (currentPlan == null) {
-			return;
-		}
 		if (currentAction == null && currentPlan.Count > 0) {
 			currentAction = currentPlan.Dequeue ();
 		} else {
@@ -345,16 +335,17 @@ public class Move : MonoBehaviour
 				return;
 			} else if(CurrentActionHasEnded () && currentPlan.Count > 0) {
 				currentAction = currentPlan.Dequeue ();
+				currentActionHasEnded = false;
 			}
 		}
 		Action action = currentAction.Action ();
 		if (action == Action.MOVE_TO) {
-			Vector3 targetPosition = currentAction.Position ();
+			Vector3 targetPosition = currentAction.Position ();;
 			bool equal_x = this.transform.position.x == targetPosition.x;
 			bool equal_z = this.transform.position.z == targetPosition.z;
 			float distance_to_target = Mathf.Sqrt(DistanceBetweenMeAndPoint(targetPosition));
 			bool isSomethingAhead = IsSomethingAhead();
-			if ((equal_x && equal_z) || (isSomethingAhead && distance_to_target <= 1f)) {
+			if ((equal_x && equal_z) || (distance_to_target <= 1f)) {
 				currentActionHasEnded = true;
 				return;
 			}
@@ -374,10 +365,8 @@ public class Move : MonoBehaviour
 			if (FoodAhead ()) {
 				this.PickFood ();
 			}
-			currentActionHasEnded = true;
+			currentActionHasEnded = true; 
 		} else if (action == Action.DROP_FOOD) {
-			Debug.Log(myColonyPosition);
-			Debug.Log(this.transform.position);
 			if (HasFood () && AtBase ()) {
 				this.DropFood ();
 			}
@@ -718,7 +707,7 @@ public class Move : MonoBehaviour
 
 	Vector3 MoveRandomly () {
 		int rand = Random.Range(1,1000);
-		float multiplier = 1.0f;
+		float multiplier = 2.0f;
 		if (rand <= 2) {
 			//transform.Rotate (0f,-90f,0f);
 			return this.transform.position + Vector3.left*multiplier;

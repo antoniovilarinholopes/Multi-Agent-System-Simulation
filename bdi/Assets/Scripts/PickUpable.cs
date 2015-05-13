@@ -25,6 +25,10 @@ public class PickUpable : MonoBehaviour {
 		}
 	}
 
+	public bool BeingCarried () {
+		return beingCarried;
+	}
+
 	public void SetBeingCarried(bool carried) {
 		this.beingCarried = carried;
 	}

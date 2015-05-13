@@ -47,14 +47,14 @@ public class IsOnSight : MonoBehaviour {
 				myRobot.SetIsFoodSourceOnSight(false, null);
 			}
 		} else if (collider.tag == "Food") {
-			if (IsObjectOnSight (collider)) {
+			if (IsObjectOnSight (collider) && !collider.gameObject.GetComponent<PickUpable> ().BeingCarried()) {
 				//Debug.Log("Food on Sight");
 				myRobot.SetIsFoodOnSight (true, collider.gameObject);
 			} else {
 				myRobot.SetIsFoodOnSight (false, null);
 			}
 		} else if (collider.tag == "SpecFood") {
-			if (IsObjectOnSight (collider)) {
+			if (IsObjectOnSight (collider) && !collider.gameObject.GetComponent<PickUpable> ().BeingCarried()) {
 				//Debug.Log("SpecFood on Sight");
 				myRobot.SetIsSpecFoodOnSight (true, collider.gameObject);
 			} else {

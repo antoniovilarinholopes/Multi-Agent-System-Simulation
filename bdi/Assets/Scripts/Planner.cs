@@ -11,18 +11,7 @@ public class Planner {
 		this.colonyPosition = colonyPosition;
 		this.intentionDetails = intentionDetails;
 	}
-
-	/*
-	public Planner(Vector3 colonyPosition, Move.IntentionDetails intentionDetails) {
-		this.colonyPosition = colonyPosition;
-		this.intentionDetails = intentionDetails;
-	}
-
-	public void UpdatePlanner(Move.IntentionDetails intentionDetails) {
-		this.intentionDetails = intentionDetails;
-	}*/
-
-
+	
 	public Queue<PlanAction> Plan() { 
 		Queue<PlanAction> plan = new Queue<PlanAction> ();
 		Intention intention = intentionDetails.Intention();
