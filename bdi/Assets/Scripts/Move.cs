@@ -906,7 +906,7 @@ public class Move : MonoBehaviour
 		this.specFoodOnSight = specFoodOnSight;
 		if(isSpecFoodOnSight) {
 			//Vector3 foodPosition = new Vector3(specFoodOnSight.transform.position.x, specFoodOnSight.transform.position.y, specFoodOnSight.transform.position.z);
-			Vector3 foodPosition = food.transform.position;
+			Vector3 foodPosition = specFoodOnSight.transform.position;
 			if(!myBeliefs.ContainsKey(foodPosition)) {
 				commModule.Broadcast(SpeechAtc.INFORM_ADD, "SpecFood", foodPosition);
 				AddToBeliefs("SpecFood", foodPosition);
