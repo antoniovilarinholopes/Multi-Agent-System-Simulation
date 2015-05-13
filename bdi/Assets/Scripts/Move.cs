@@ -12,7 +12,7 @@ public enum SpeechAtc {INFORM_ADD, INFORM_REMOVE, REQUEST_ADD}
 public class Move : MonoBehaviour
 {	
 	bool endOfWorld, hasFood, atBase;
-	bool enemyInAhead, foodAhead, obstacleAhead, agentAhead;
+	bool enemyAhead, foodAhead, obstacleAhead, agentAhead;
 	bool isFoodOnSight, isSpecFoodOnSight, isEnemyOnSight, isObstacleOnSight, isColonyOnSight;
 	bool isFoodSourceOnSight;
 	GameObject foodOnSight, specFoodOnSight, obstacleOnSight, enemyOnSight, colonyOnSight, foodSourceOnSight;
@@ -42,10 +42,10 @@ public class Move : MonoBehaviour
 		navMeshAgent = this.GetComponent<NavMeshAgent> ();
 		endOfWorld = false;
 		foodAhead = false;
-		enemyInAhead = false;
+		enemyAhead = false;
 		hasFood = false;
 		atBase = false;
-		enemyInAhead = false;
+		enemyAhead = false;
 		agentAhead = false;
 		isFoodOnSight = false;
 		isEnemyOnSight = false;
@@ -63,7 +63,7 @@ public class Move : MonoBehaviour
 
 		Vector3 moveRand = MoveRandomly ();
 		myCurrentIntention = new IntentionDetails(Intention.SEARCH_FOOD, 1f, moveRand);
-		myBeliefs = new Dictionary<Vector3,string> ();
+		myBeliefs = new Dictionary<Vector3,string> (new Vector3Comparer());
 	}
 
 	/*
@@ -97,6 +97,10 @@ public class Move : MonoBehaviour
 				return;
 			}
 			ExecuteAction ();
+			if (Reconsider ()) {
+				Options ();
+				Filter ();
+			}
 			//Debug.Log(currentPlan.Count);
 			Brf ();
 			if(!Sound ()) {
@@ -113,9 +117,7 @@ public class Move : MonoBehaviour
 	/*
 	 * BDI
 	 */
-
-
-
+	
 	Planner CreateNewPlan () {
 		//uses myBeliefs and myIntentions
 		return new Planner (myColonyPosition, myCurrentIntention);
@@ -125,6 +127,7 @@ public class Move : MonoBehaviour
 		// The beliefs are constantly updated with the IsOnSight.
 		// However it's necessary to update that in the position of the agent
 		// there is nothing but him. Necessary in cases such as picking up food.
+		//FIXME myPosition!!!!
 		Vector3 myPosition = this.transform.position;
 		if (myBeliefs.ContainsKey (myPosition)) {
 			myBeliefs.Remove(myPosition);
@@ -138,7 +141,6 @@ public class Move : MonoBehaviour
 
 	void Options () {
 		//using myBeliefs and myIntentions update myDesires
-		//FIXME currently myIntentions don't enter in the weight calculation
 
 		if (KnowWhereFoodIs () || KnowWhereFoodSourceIs ()) {
 			float get_food_multiplier = 0.9f;
@@ -151,15 +153,15 @@ public class Move : MonoBehaviour
 			myDesires [Desire.GET_FOOD] = 0.7f;
 		}
 
-		if (HasLowLife ()) {
+		if (EnemyAhead ()) {
+			myDesires [Desire.HELP_SELF] = 1f;
+		} else if (HasLowLife ()) {
 			float help_self_multiplier = 0.9f;
 			if (HasFood ()) {
 				help_self_multiplier = 1f;
 			}
 			myDesires [Desire.HELP_SELF] = 1f * help_self_multiplier;
-		} else if (EnemyAhead ()) {
-			myDesires [Desire.HELP_SELF] = 1f;
-		} else {
+		}  else {
 			myDesires [Desire.HELP_SELF] = 0.0f;
 		}
 
@@ -267,9 +269,6 @@ public class Move : MonoBehaviour
 		float minDist = float.MaxValue;
 		foreach (Vector3 belief in myBeliefs.Keys) {
 			if(myBeliefs [belief] == "FoodSource") {
-				/*float distance_x = belief.x - this.transform.position.x;
-				float distance_z = belief.z - this.transform.position.z;
-				float distance_to_foodsource = distance_x*distance_x + distance_z*distance_z;*/
 				float distance_to_foodsource = DistanceBetweenMeAndPoint(belief);
 				if(distance_to_foodsource < minDist) {
 					minDist = distance_to_foodsource;
@@ -285,9 +284,6 @@ public class Move : MonoBehaviour
 		float minDist = float.MaxValue;
 		foreach (Vector3 belief in myBeliefs.Keys) {
 			if(myBeliefs [belief] == "SpecFood") {
-				/*float distance_x = belief.x - this.transform.position.x;
-				float distance_z = belief.z - this.transform.position.z;
-				float distance_to_foodsource = distance_x*distance_x + distance_z*distance_z;*/
 				float distance_to_foodsource = DistanceBetweenMeAndPoint(belief);
 				if(distance_to_foodsource < minDist) {
 					minDist = distance_to_foodsource;
@@ -345,7 +341,7 @@ public class Move : MonoBehaviour
 			bool equal_z = this.transform.position.z == targetPosition.z;
 			float distance_to_target = Mathf.Sqrt(DistanceBetweenMeAndPoint(targetPosition));
 			bool isSomethingAhead = IsSomethingAhead();
-			if ((equal_x && equal_z) || (distance_to_target <= 1f)) {
+			if ((equal_x && equal_z) || (isSomethingAhead && distance_to_target <= 1.5f)) {
 				currentActionHasEnded = true;
 				return;
 			}
@@ -398,6 +394,7 @@ public class Move : MonoBehaviour
 		return myColonyComp.HowManyAtBase ();
 	}
 
+	//FIXME
 	bool Impossible () {
 		//is it possible that with my beliefs i complete my intention(s)?
 		return false;
@@ -422,6 +419,12 @@ public class Move : MonoBehaviour
 	bool PlanIsEmpty () {
 		return currentPlan.Count == 0 && CurrentActionHasEnded ();
 	}
+
+	//FIXME
+	bool Reconsider () {
+		return false;
+	}
+
 
 	IList<IntentionDetails> RetrieveIntentionsFromDesires (IList<Desire> desires) {
 
@@ -544,6 +547,7 @@ public class Move : MonoBehaviour
 
 	}
 
+	//FIXME
 	bool Sound () {
 		//is the plan going right?
 		return true;
@@ -608,7 +612,7 @@ public class Move : MonoBehaviour
 	}
 
 	bool EnemyAhead() {
-		return enemyInAhead;
+		return enemyAhead;
 	}
 
 	
@@ -691,7 +695,7 @@ public class Move : MonoBehaviour
 			Monster monster = enemy.GetComponent<Monster> ();
 			monster.TakeDamage (gameObject);
 		} else {
-			enemyInAhead = false;
+			enemyAhead = false;
 
 		}
 	}
@@ -722,9 +726,16 @@ public class Move : MonoBehaviour
 	void PickFood () {
 		this.foodAhead = false;
 		this.hasFood = true;
+		PickUpable foodComp = food.GetComponent<PickUpable> ();
+		foodComp.SetBeingCarried (true);
+		foodComp.SetCarrying (this);
 		Vector3 foodPosition = food.transform.position;
+		foodPosition.y = 1.5f;
 		// We do not need to know where the food we have is
-		if(myBeliefs.ContainsKey(foodPosition)) {
+		//if(myBeliefs.ContainsKey(foodPosition)) {
+		string item;
+		if(myBeliefs.TryGetValue(foodPosition, out item)) {
+			commModule.Broadcast(SpeechAtc.INFORM_REMOVE, foodComp.gameObject.tag, foodPosition);
 			myBeliefs.Remove(foodPosition);
 		}
 	}
@@ -813,7 +824,7 @@ public class Move : MonoBehaviour
 
 	void RunFromEnemy() {
 		enemy = null;
-		enemyInAhead = false;
+		enemyAhead = false;
 		SendBack ();
 	}
 
@@ -824,7 +835,14 @@ public class Move : MonoBehaviour
 	 * Public (Being called outside Agent)
 	 */
 
-	
+
+	public void AddToBeliefs(string name, Vector3 position) {
+		bool hasBelief = myBeliefs.ContainsKey(position) && myBeliefs [position] == name;
+		if(!hasBelief) {
+			myBeliefs [position] = name;
+		}
+	}
+
 	public void DecreaseLife (float lifeDecreased) {
 		health -= Time.deltaTime * lifeDecreased;
 		if (health <= 0) {
@@ -844,6 +862,20 @@ public class Move : MonoBehaviour
 	
 	public void EatFood (float healHealth) {
 		this.health += healHealth;
+	}
+
+	public void HelpRequest (string name, Vector3 position) {
+		if (position != this.transform.position) {
+
+		}
+		
+	}
+
+	public void RemoveBelief(string name, Vector3 position) {
+		bool hasBelief = myBeliefs.ContainsKey(position) && myBeliefs [position] == name;
+		if(hasBelief) {
+			myBeliefs.Remove(position);
+		}
 	}
 
 	// FIXME: Do we need the public here?
@@ -894,13 +926,6 @@ public class Move : MonoBehaviour
 		}
 	}
 
-	public void AddToBeliefs(string name, Vector3 position) {
-		bool hasBelief = myBeliefs.ContainsKey(position) && myBeliefs [position] == name;
-		if(!hasBelief) {
-			myBeliefs [position] = name;
-		}
-	}
-
 	public void SetIsSpecFoodOnSight (bool isSpecFoodOnSight, GameObject specFoodOnSight) {
 		this.isSpecFoodOnSight = isSpecFoodOnSight;
 		this.specFoodOnSight = specFoodOnSight;
@@ -919,17 +944,12 @@ public class Move : MonoBehaviour
 		this.enemyOnSight = enemyOnSight;
 		// TODO: Do we need this?
 		Vector3 enemyPosition = enemyOnSight.transform.position;
-		/* FIXME verify that if has the key, it was not a monster
-		if(!myBeliefs.ContainsKey(enemyPosition)) {
-			myBeliefs[enemyPosition] = "Monster";
-		}*/
 	}
 
 	public void SetIsObstacleOnSight (bool isObstacleOnSight, GameObject obstacleOnSight) {
 		this.isObstacleOnSight = isObstacleOnSight;
 		this.obstacleOnSight = obstacleOnSight;
 		Vector3 obsPosition = obstacleOnSight.transform.position;
-		// FIXME
 		if(!myBeliefs.ContainsKey(obsPosition)) {
 			myBeliefs [obsPosition] = "Wall";
 		}
@@ -945,7 +965,8 @@ public class Move : MonoBehaviour
 	}
 	
 	public void SetEnemyInFront(GameObject enemy) {
-		enemyInAhead = true;
+		//FIXME here should be done the broadcast?
+		enemyAhead = true;
 		this.enemy = enemy;
 	}
 	

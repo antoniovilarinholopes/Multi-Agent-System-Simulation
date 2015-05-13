@@ -25,12 +25,6 @@ public class IsOnSight : MonoBehaviour {
 		if (Physics.Raycast (transform.position + transform.up, direction.normalized, out hit, 15f)) {
 		
 			// ... and if the raycast hits the something..
-			/*if(collider.tag == "Wall") {
-				bool t = collider.gameObject == hit.collider.gameObject;
-				return hit.collider.gameObject.tag == collider.tag && collider.gameObject == hit.collider.gameObject;
-			}
-			return hit.collider.gameObject.tag == collider.tag;*/
-			//FIXME 
 			if(collider.tag == "FoodSource" && hit.collider.tag == "Food") {
 				return true;
 			}

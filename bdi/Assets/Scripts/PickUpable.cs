@@ -19,10 +19,18 @@ public class PickUpable : MonoBehaviour {
 	void OnTriggerEnter(Collider collider) {
 		Move move = collider.GetComponent<Move>();
 		if(move != null && !beingCarried) {
-			beingCarried = true;
-			carrying = move;
+			//beingCarried = true;
+			//carrying = move;
 			move.SetFood(gameObject);
 		}
+	}
+
+	public Move Carrying () {
+		return carrying;
+	}
+	
+	public void SetCarrying(Move carrying) {
+		this.carrying = carrying;
 	}
 
 	public bool BeingCarried () {

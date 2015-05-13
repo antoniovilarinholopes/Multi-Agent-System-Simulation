@@ -19,12 +19,6 @@ public class GenerateFood : MonoBehaviour {
 
 	void SpawnFood () {
 		int spawnPointIndex = Random.Range (0, spawnPoints.Length);
-		//FIXME not working why?
-		/*bool occupiedSpace = Physics.CheckSphere (spawnPoints[spawnPointIndex], 2f);
-		Debug.Log("SpawnPoint: " + spawnPoints[spawnPointIndex] + ", Occupied: " + occupiedSpace);
-		if (!occupiedSpace) {
-			Instantiate (foodPrefab, spawnPoints[spawnPointIndex], Quaternion.identity);
-		}*/
 		// Check if there is already Food in that position
 		Collider[] hitColliders = Physics.OverlapSphere(spawnPoints[spawnPointIndex], 2f);
 		bool clearSpace = true;

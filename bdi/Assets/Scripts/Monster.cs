@@ -38,11 +38,19 @@ public class Monster : MonoBehaviour {
 		}
 	}
 	
+	void OnTriggerExit(Collider collider) {
+		Move move = collider.GetComponent<Move>();
+		if(move != null) {
+			move.SetEnemyInFront(null);
+			SetAgentAhead(null, false);
+		}
+	}
+
 	void OnTriggerEnter(Collider collider) {
 		Move move = collider.GetComponent<Move>();
 		if(move != null) {
 			move.SetEnemyInFront(gameObject);
-			SetAgentAhead(collider.gameObject);
+			SetAgentAhead(collider.gameObject, true);
 		}
 	}
 
@@ -71,8 +79,8 @@ public class Monster : MonoBehaviour {
 		return agentAhead;
 	}
 
-	public void SetAgentAhead(GameObject agent) {
-		agentAhead = true;
+	public void SetAgentAhead(GameObject agent, bool agentAhead) {
+		this.agentAhead = agentAhead;
 		this.agent = agent;
 	}	
 }

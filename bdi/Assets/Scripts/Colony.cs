@@ -34,7 +34,7 @@ public class Colony : MonoBehaviour {
 			colonyLetter = "B";
 		}
 
-		for(int i = 0; i < 1; i++) {
+		for(int i = 0; i < 2; i++) {
 			maxAttempts = 0;
 			// TODO: Ver clearSpace
 			do {
@@ -196,7 +196,7 @@ public class Colony : MonoBehaviour {
 			isUnderAttack = true;
 		}
 	}
-
+	
 	public void Broadcast(SpeechAtc speechAct, string tag, Vector3 obj) {
 		IList<GameObject> indList = new List<GameObject>(individuals);
 		foreach(GameObject ind in indList) {
@@ -206,11 +206,18 @@ public class Colony : MonoBehaviour {
 			}
 			Move moveComp = ind.GetComponent<Move>();
 			switch (speechAct) {
-				case SpeechAtc.INFORM_ADD:
+				case SpeechAtc.INFORM_ADD: 
 					moveComp.AddToBeliefs(tag, obj);
 					break;
-			//case SpeechAtc.INFORM_REMOVE:
-			//	break;
+				case SpeechAtc.INFORM_REMOVE:
+					moveComp.RemoveBelief(tag, obj);
+					break;
+				case SpeechAtc.REQUEST_ADD:
+					moveComp.HelpRequest(tag,obj);
+					break;
+				default:
+					Debug.Log (speechAct + ":" + tag + ":" + obj);
+					break;
 			}
 		}
 	}
