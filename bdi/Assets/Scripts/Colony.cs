@@ -239,7 +239,7 @@ public class Colony : MonoBehaviour {
 		Vector3 specFoodPosition = specFood.transform.position;
 		float bid;
 		float bestBid = 0;
-		ComunicationModule bestIndividual;
+		ComunicationModule bestIndividual = null;
 		IList<GameObject> indList = new List<GameObject>(individuals);
 		foreach(GameObject ind in indList) {
 			if (ind == null) {
@@ -254,6 +254,7 @@ public class Colony : MonoBehaviour {
 			}
 		}
 		// Add special food to best Agent beliefs
+		bestIndividual.GetSpecialFood(specFoodPosition);
 	}
 
 }
