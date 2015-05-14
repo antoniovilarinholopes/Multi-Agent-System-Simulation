@@ -102,19 +102,18 @@ public class Move : MonoBehaviour
 			ExecuteAction ();
 			Brf ();
 			if (Reconsider ()) {
+				Debug.Log ("Here");
 				Options ();
 				Filter ();
+				Debug.Log (myCurrentIntention.Intention ());
 			}
 			//Debug.Log(currentPlan.Count);
 			if(!Sound ()) {
 				Planner planner = CreateNewPlan ();
 				currentPlan = planner.Plan ();
-				foreach (var planAction in currentPlan) {
-					Debug.Log(planAction.Action());
-				}
 				currentAction = null;
 				currentActionHasEnded = false;
-				//return;
+				return;
 			}
 		}
 
@@ -153,7 +152,8 @@ public class Move : MonoBehaviour
 			myDesires [Desire.GET_FOOD] = 0.7f;
 		}
 
-		if (EnemyAhead ()) {
+		if (EnemyAhead () && !AtBase ()) {
+			Debug.Log("Penis gigante a frente");
 			myDesires [Desire.HELP_SELF] = 1f;
 		} else if (HasLowLife ()) {
 			float help_self_multiplier = 0.9f;
@@ -166,7 +166,9 @@ public class Move : MonoBehaviour
 		}
 
 		if (ColonyBeingAttacked ()) {
+			Debug.Log("Penis gigante a frente na colonia");
 			if (AtBase ()) {
+				Debug.Log("Vou lutar o Penis gigante a frente na colonia");
 				myDesires [Desire.DEFEND_COL] = 1.0f;
 			} else {
 				float defend_col_multiplier = 1.0f;
@@ -381,8 +383,10 @@ public class Move : MonoBehaviour
 			}
 		} else if (action == Action.FIGHT_MONSTER) {
 			if (EnemyAhead ()) {
+				Debug.Log ("HERE");
 				this.HitEnemy ();
 			} else {
+				Debug.Log ("HE died");
 				currentActionHasEnded = true;
 			}
 		}
@@ -397,8 +401,6 @@ public class Move : MonoBehaviour
 		return myColonyComp.HowManyAtBase ();
 	}
 
-	//FIXME
-	// CHECK
 	bool Impossible () {
 		//is it possible that with my beliefs i complete my intention(s)?
 		// if the target position is no longer in our beliefs the plan becomes impossible
@@ -437,7 +439,8 @@ public class Move : MonoBehaviour
 	//FIXME
 	//CHECK
 	bool Reconsider () {
-		return isEnemyOnSight;
+		bool amIGoingToDie = HasFood () && HasLowLife () && !CanMakeItThere (myColonyPosition);
+		return EnemyAhead () || EnemyOnSight () || amIGoingToDie;
 	}
 
 
@@ -448,8 +451,7 @@ public class Move : MonoBehaviour
 		foreach (var desire in desires) {
 			if (desire == Desire.HELP_SELF) {
 				float eat_food_weight = 1.0f;
-				if (EnemyAhead ()) {
-					Debug.Log ("WHAT");
+				if (EnemyAhead () || EnemyOnSight ()) {
 					IntentionDetails intention = new IntentionDetails(Intention.ATTACK_MONSTER_AT,1f,enemy.transform.position);
 					myCurrentIntentions.Add (intention);
 					eat_food_weight = 0.5f;
@@ -569,7 +571,6 @@ public class Move : MonoBehaviour
 		return true;
 	}
 
-	//FIXME
 	bool Succeeded () {
 		//have i done what i wanted to?
 		return PlanIsEmpty ();
@@ -894,7 +895,6 @@ public class Move : MonoBehaviour
 		}
 	}
 
-	// FIXME: Do we need the public here? YES
 	public void SendBack () {
 		transform.Rotate (0f, 180f, 0f);
 		endOfWorld = false;
@@ -981,7 +981,9 @@ public class Move : MonoBehaviour
 	}
 	
 	public void SetEnemyInFront(GameObject enemy) {
-		//FIXME here should be done the broadcast? NO
+		if (HasLowLife () || HasFood ()) {
+			this.commModule.Broadcast(SpeechAtc.REQUEST_ADD, "Monster", this.transform.position);
+		}
 		enemyAhead = true;
 		this.enemy = enemy;
 	}
