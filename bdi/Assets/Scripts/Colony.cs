@@ -7,7 +7,7 @@ public class Colony : MonoBehaviour {
 	public GameObject prefabInd;
 	public GameObject prefabSpecFood;
 	IList<GameObject> individuals;
-	public float foodCount;
+	float foodCount;
 	const float foodMultiplier = 5f;
 	const float specialFoodMultiplier = 10f;
 	const float timeToRemoveHealth = 10f;
@@ -70,7 +70,7 @@ public class Colony : MonoBehaviour {
 			indComponent.SetMyColony(this.gameObject);
 		}
 		// Create special food and start auction every 20 secs
-		InvokeRepeating ("CreateSpecFood", 0f, 20f);
+		InvokeRepeating ("CreateSpecFood", 20f, 20f);
 	}
 
 	void Update () {
@@ -90,7 +90,7 @@ public class Colony : MonoBehaviour {
 
 		//If has plenty of food and at least 2 are at base, populate new inds
 		if (HasFoodToPopulate () && individualsAtBaseCount >= 2) {
-			minLimitFoodToPopulate += 2f;
+			minLimitFoodToPopulate += 4.0f;
 			Color individualColor;
 			string playerTag;
 			if(gameObject.tag == "ColA") {
@@ -114,6 +114,9 @@ public class Colony : MonoBehaviour {
 			int rotation = Random.Range(0, 4) * 90;
 			individual.transform.Rotate(0f, rotation, 0f);
 			individual.tag = playerTag;
+			Move indComponent = individual.GetComponent<Move> ();
+			indComponent.SetColonyPosition(this.transform.position);
+			indComponent.SetMyColony(this.gameObject);
 			// Muda a cor do Robot2
 			individual.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color = individualColor;
 			this.individuals.Add (individual);
