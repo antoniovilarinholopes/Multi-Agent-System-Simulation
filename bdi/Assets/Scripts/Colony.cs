@@ -253,8 +253,11 @@ public class Colony : MonoBehaviour {
 				bestIndividual = comm;
 			}
 		}
-		// Add special food to best Agent beliefs
-		bestIndividual.GetSpecialFood(specFoodPosition);
+		if(individuals.Count > 0) {
+			Debug.Log("BestBid: " + bestBid);
+			// Add special food to best Agent beliefs
+			bestIndividual.GetSpecialFood(specFoodPosition);
+		}
 	}
 
 }

@@ -9,6 +9,7 @@ public class Monster : MonoBehaviour {
 	private GameObject agent;
 	private float hitPoints = 12f;
 	private float hitRate = 2f;
+	public GameObject specFood;
 	float flashSpeed = 5f;
 	Color flashColour = Color.red;
 	Color myColor;
@@ -70,6 +71,7 @@ public class Monster : MonoBehaviour {
 		transform.LookAt (ind.transform.position);
 		hitPoints -= Time.deltaTime * hitRate;
 		if (hitPoints <= 0) {
+			DropFood();
 			Object.Destroy(this.gameObject);
 		}
 		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
@@ -82,5 +84,9 @@ public class Monster : MonoBehaviour {
 	public void SetAgentAhead(GameObject agent, bool agentAhead) {
 		this.agentAhead = agentAhead;
 		this.agent = agent;
-	}	
+	}
+
+	void DropFood() {
+		Instantiate(specFood, transform.position, Quaternion.identity);
+	}
 }
