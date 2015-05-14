@@ -109,7 +109,7 @@ public class Move : MonoBehaviour
 				//Debug.Log ("Here");
 				Options ();
 				Filter ();
-				Debug.Log (myCurrentIntention.Intention ());
+				//Debug.Log (myCurrentIntention.Intention ());
 			}
 		}
 
@@ -339,10 +339,11 @@ public class Move : MonoBehaviour
 			bool equal_z = this.transform.position.z == targetPosition.z;
 			float distance_to_target = Mathf.Sqrt(DistanceBetweenMeAndPoint(targetPosition));
 			bool isSomethingAhead = IsSomethingAhead();
-			if ((equal_x && equal_z) || (isSomethingAhead && distance_to_target <= 1.5f)) {
+			bool populateEnded = myCurrentIntention.Intention () == Intention.POPULATE_AT && AtBase ();
+			if ((populateEnded) || (equal_x && equal_z) || (isSomethingAhead && distance_to_target <= 1.5f)) {
 				currentActionHasEnded = true;
 				return;
-			}
+			} 
 			navMeshAgent.SetDestination (currentAction.Position ());
 		} else if (action == Action.EAT && HasFood ()) {
 			hasFood = false;
@@ -434,7 +435,7 @@ public class Move : MonoBehaviour
 
 	bool Reconsider () {
 		bool amIGoingToDie = HasFood () && HasLowLife () && !CanMakeItThere (myColonyPosition);
-		return EnemyAhead () || EnemyOnSight () || amIGoingToDie || SpecFoodOnSight ();
+		return EnemyAhead () || EnemyOnSight () || amIGoingToDie || SpecFoodOnSight () || (!FoodToPopulate () && myCurrentIntention.Intention () == Intention.POPULATE_AT);
 	}
 
 
@@ -517,7 +518,6 @@ public class Move : MonoBehaviour
 						myCurrentIntentions.Add (intention);
 						continue;
 					} 
-
 				}
 
 				bool knowWhereFoodIs = KnowWhereFoodIs ();
@@ -641,7 +641,7 @@ public class Move : MonoBehaviour
 		return health <= 20f;
 	}
 	
-	bool HasFood ()	{
+	public bool HasFood ()	{
 		return hasFood;
 	}
 
@@ -791,12 +791,6 @@ public class Move : MonoBehaviour
 		foreach (Desire desire in System.Enum.GetValues(typeof(Desire))) {
 			myDesires[desire] = 1f;
 		}
-		/*
-		myDesires.Add (Desire.GET_FOOD);
-		myDesires.Add (Desire.DEFEND_COL);
-		myDesires.Add (Desire.HELP_OTHER);
-		myDesires.Add (Desire.HELP_SELF);
-		myDesires.Add (Desire.POPULATE);*/
 	}
 
 	void MoveForward() {
@@ -869,6 +863,7 @@ public class Move : MonoBehaviour
 
 	
 	public void EatFood (float healHealth) {
+		//Debug.Log (health);
 		this.health += healHealth;
 	}
 
