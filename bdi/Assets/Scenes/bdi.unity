@@ -322,6 +322,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefabInd: {fileID: 123646, guid: 684d748694847af4483c3cc83a085542, type: 2}
+  prefabSpecFood: {fileID: 131274, guid: 54e6dcb404d7c8148b7565de00954897, type: 2}
   foodCount: 0
 --- !u!1 &804953730
 GameObject:
@@ -941,6 +942,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefabInd: {fileID: 123646, guid: 684d748694847af4483c3cc83a085542, type: 2}
+  prefabSpecFood: {fileID: 131274, guid: 54e6dcb404d7c8148b7565de00954897, type: 2}
   foodCount: 0
 --- !u!65 &1623446773
 BoxCollider:

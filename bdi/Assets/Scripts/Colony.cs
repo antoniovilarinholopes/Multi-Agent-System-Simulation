@@ -70,7 +70,7 @@ public class Colony : MonoBehaviour {
 			indComponent.SetMyColony(this.gameObject);
 		}
 		// Create special food and start auction every 20 secs
-		InvokeRepeating(CreateSpecFood, 20f, 20f);
+		InvokeRepeating ("CreateSpecFood", 20f, 20f);
 	}
 
 	void Update () {

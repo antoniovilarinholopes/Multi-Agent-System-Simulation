@@ -77,10 +77,12 @@ public class Move : MonoBehaviour
 		DecreaseLife(0.5f);
 		//single commitment
 
+		/*
 		foreach (var belief in myBeliefs.Keys) {
 			Debug.Log (myBeliefs[belief] + ":" + belief);
 		}
 		Debug.Log ("----");
+		*/
 
 		if (currentPlan == null) {
 			Brf ();
@@ -97,12 +99,12 @@ public class Move : MonoBehaviour
 				return;
 			}
 			ExecuteAction ();
+			Brf ();
 			if (Reconsider ()) {
 				Options ();
 				Filter ();
 			}
 			//Debug.Log(currentPlan.Count);
-			Brf ();
 			if(!Sound ()) {
 				Planner planner = CreateNewPlan ();
 				currentPlan = planner.Plan ();
@@ -129,12 +131,12 @@ public class Move : MonoBehaviour
 		// there is nothing but him. Necessary in cases such as picking up food.
 		//FIXME myPosition!!!!
 		Vector3 myPosition = this.transform.position;
-		if (myBeliefs.ContainsKey (myPosition)) {
+		if (myBeliefs.ContainsKey (myPosition) && myBeliefs [myPosition] != "MyCol") {
 			myBeliefs.Remove(myPosition);
 		}
 		//FIXME may cause problems with food sources
 		myPosition.y += 1.5f;
-		if (myBeliefs.ContainsKey (myPosition)) {
+		if (myBeliefs.ContainsKey (myPosition) && myBeliefs [myPosition] != "MyCol") {
 			myBeliefs.Remove(myPosition);
 		}
 	}
@@ -399,8 +401,8 @@ public class Move : MonoBehaviour
 	bool Impossible () {
 		//is it possible that with my beliefs i complete my intention(s)?
 		// if the target position is no longer in our beliefs the plan becomes impossible
-		return !myBeliefs.ContainsKey(myCurrentIntention.Position());
-		//return false;
+		bool intentionsPossible = (myCurrentIntention.Intention () == Intention.EAT_FOOD) || (myCurrentIntention.Intention () == Intention.SEARCH_FOOD);
+		return !intentionsPossible && !myBeliefs.ContainsKey(myCurrentIntention.Position());
 	}
 
 	bool KnowWhereFoodIs () {
@@ -728,6 +730,7 @@ public class Move : MonoBehaviour
 	}
 
 	void PickFood () {
+		Debug.Log ("HEre");
 		this.foodAhead = false;
 		this.hasFood = true;
 		PickUpable foodComp = food.GetComponent<PickUpable> ();

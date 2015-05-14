@@ -21,7 +21,7 @@ public class ComunicationModule : MonoBehaviour {
 	public float RequestBid (Vector3 position) {
 		float bid;
 		bid = Mathf.Sqrt(move.DistanceBetweenMeAndPoint (position));
-		if(move.myCurrentIntention.Intention == Intention.SEARCH_FOOD) {
+		if(move.myCurrentIntention.Intention () == Intention.SEARCH_FOOD) {
 			bid *= 2;
 		}
 		return bid;
