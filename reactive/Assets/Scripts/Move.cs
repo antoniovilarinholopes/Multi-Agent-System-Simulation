@@ -5,8 +5,8 @@ public class Move : MonoBehaviour
 {	
 	bool endOfWorld, hasFood, atBase;
 	bool enemyInAhead,foodAhead, obstacleAhead, agentAhead;
-	bool isFoodOnSight, isSpecFoodOnSight, isEnemyOnSight, isObstacleOnSight, isColonyOnSight;
-	GameObject foodOnSight, specFoodOnSight, obstacleOnSight, enemyOnSight, colonyOnSight;
+	bool isFoodOnSight, isSpecFoodOnSight, isEnemyOnSight, isObstacleOnSight, isColonyOnSight, isFoodSourceOnSight;
+	GameObject foodOnSight, specFoodOnSight, obstacleOnSight, enemyOnSight, colonyOnSight, foodSourceOnSight;
 	GameObject food, enemy, wallObj, colony;
 	Color flashColour = Color.red;
 	Color myColor;
@@ -57,6 +57,8 @@ public class Move : MonoBehaviour
 			PursueFood (specFoodOnSight);
 		} else if (FoodOnSight () && !HasFood ()) {
 			PursueFood (foodOnSight);
+		} else if(FoodSourceOnSight() && !HasFood ()) {
+			Pursue(foodSourceOnSight);
 		} else if (HasFood () && ColonyOnSight ()){
 			GotoBase ();
 		} else if (ColonyOnSight () && HasLowLife ()) {
@@ -109,11 +111,15 @@ public class Move : MonoBehaviour
 		return isFoodOnSight;
 	}
 
+	bool FoodSourceOnSight() {
+		return isFoodSourceOnSight;
+	}
+
 	public bool HasLowLife () {
 		return health <= 5;
 	}
 	
-	bool HasFood ()	{
+	public bool HasFood ()	{
 		return hasFood;
 	}
 
@@ -196,6 +202,11 @@ public class Move : MonoBehaviour
 	void PickFood () {
 		this.foodAhead = false;
 		this.hasFood = true;
+		PickUpable foodComp = food.GetComponent<PickUpable> ();
+		if(foodComp != null) {
+			foodComp.SetBeingCarried (true);
+			foodComp.SetCarrying (gameObject);
+		}
 	}
 	
 	void PursueFood (GameObject food) {
@@ -257,7 +268,8 @@ public class Move : MonoBehaviour
 	void Pursue(GameObject target) {
 		//pursuing = true;
 		Vector3 targetDir = target.transform.position - transform.position;
-		targetDir.y = 0;
+		//targetDir.y = this.transform.position.y;
+		targetDir.y = 0.0f;
 		float step  = smooth * Time.deltaTime;
 		Vector3 newDir = Vector3.RotateTowards(transform.forward, targetDir, step, 0.0f);
 		transform.rotation = Quaternion.LookRotation(newDir);
@@ -283,7 +295,9 @@ public class Move : MonoBehaviour
 		if (health <= 0) {
 			Debug.Log ("Agent Died");
 			if(HasFood()) {
-				this.food.GetComponent<PickUpable>().SetBeingCarried(false);
+				PickUpable foodBeingCarried = this.food.GetComponent<PickUpable>();
+				foodBeingCarried.SetBeingCarried(false);
+				foodBeingCarried.SetCarrying(null);
 			}
 			Object.Destroy(this.gameObject);
 		}
@@ -295,7 +309,6 @@ public class Move : MonoBehaviour
 		this.health += healHealth;
 	}
 
-	// FIXME: Do we need the public here?
 	public void SendBack () {
 		transform.Rotate (0f, 180f, 0f);
 		endOfWorld = false;
@@ -326,6 +339,11 @@ public class Move : MonoBehaviour
 	public void SetIsColonyOnSight (bool isColonyOnSight, GameObject colonyOnSight) {
 		this.isColonyOnSight = isColonyOnSight;
 		this.colonyOnSight = colonyOnSight;
+	}
+
+	public void SetIsFoodSourceOnSight (bool isFoodSourceOnSight, GameObject foodSourceOnSight){
+		this.isFoodSourceOnSight = isFoodSourceOnSight;
+		this.foodSourceOnSight = foodSourceOnSight;
 	}
 
 	public void SetEndOfWorld() {
@@ -360,7 +378,7 @@ public class Move : MonoBehaviour
 		mat.color = flashColour;
 		DecreaseLife (hitRate);
 
-		Debug.Log ("Agent Hitpoints: " + health);
+		//Debug.Log ("Agent Hitpoints: " + health);
 		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
 	}
 

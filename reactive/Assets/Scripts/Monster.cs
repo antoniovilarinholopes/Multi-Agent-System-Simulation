@@ -3,13 +3,18 @@ using System.Collections;
 
 public class Monster : MonoBehaviour {
 
+	public const float SPEED = 2.0f;
+
 	private bool agentAhead;
 	private GameObject agent;
 	private float hitPoints = 12f;
 	private float hitRate = 2f;
+	public GameObject specFood;
 	float flashSpeed = 5f;
 	Color flashColour = Color.red;
 	Color myColor;
+	Vector3 colonyPos;
+	bool inColony = false;
 
 	// Use this for initialization
 	void Start () {
@@ -20,14 +25,40 @@ public class Monster : MonoBehaviour {
 	void Update () {
 		if (AgentAhead ()) {
 			HitAgent();
+		} else {
+			MoveRandomly();
+		}
+	}
+
+	void MoveToColony() {
+		float step = Time.deltaTime * SPEED;
+		transform.position = Vector3.MoveTowards(transform.position, colonyPos, step);
+	}
+
+	void MoveRandomly () {
+		int rand = Random.Range(1,1000);
+		if (rand <= 2) {
+			transform.Rotate (0f,-90f,0f);
+		} else if(rand <= 4) {
+			transform.Rotate (0f,90f,0f);
+		} else {
+			transform.Translate (Vector3.forward * Time.deltaTime * SPEED, Space.Self);
 		}
 	}
 	
+	void OnTriggerExit(Collider collider) {
+		Move move = collider.GetComponent<Move>();
+		if(move != null) {
+			move.SetEnemyInFront(null);
+			SetAgentAhead(null, false);
+		}
+	}
+
 	void OnTriggerEnter(Collider collider) {
 		Move move = collider.GetComponent<Move>();
 		if(move != null) {
 			move.SetEnemyInFront(gameObject);
-			SetAgentAhead(collider.gameObject);
+			SetAgentAhead(collider.gameObject, true);
 		}
 	}
 
@@ -42,11 +73,14 @@ public class Monster : MonoBehaviour {
 
 	public void TakeDamage(GameObject ind) {
 		Material mat = this.gameObject.transform.GetChild(0).GetChild(1).GetComponent<Renderer> ().material;
-		Color color = mat.color;
+		//Color color = mat.color;
 		mat.color = flashColour;
-		transform.LookAt (ind.transform.position);
+		Vector3 look = ind.transform.position;
+		look.y = 0;
+		transform.LookAt (look);
 		hitPoints -= Time.deltaTime * hitRate;
 		if (hitPoints <= 0) {
+			DropFood();
 			Object.Destroy(this.gameObject);
 		}
 		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
@@ -56,8 +90,24 @@ public class Monster : MonoBehaviour {
 		return agentAhead;
 	}
 
-	public void SetAgentAhead(GameObject agent) {
-		agentAhead = true;
+	public void SetAgentAhead(GameObject agent, bool agentAhead) {
+		this.agentAhead = agentAhead;
 		this.agent = agent;
-	}	
+	}
+
+	void DropFood() {
+		Vector3 position = transform.position;
+		position.y = 1.5f;
+		Instantiate(specFood, position, Quaternion.identity);
+	}
+
+	public void SetInColony (bool inColony, GameObject colony) {
+		this.inColony = inColony;
+		this.colonyPos = colony.transform.position;
+	}
+
+	public void SendBack () {
+		transform.Rotate (0f, 180f, 0f);
+		return;
+	}
 }

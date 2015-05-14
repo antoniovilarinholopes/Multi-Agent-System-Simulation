@@ -12,19 +12,32 @@ public class PickUpable : MonoBehaviour {
 	void Update () {
 		if (beingCarried) {
 			Vector3 forward = new Vector3(0,1,1);
-			this.transform.position = carrying.transform.position + forward;
+			this.transform.position = carrying.gameObject.transform.position + forward;
 		}
 	}
 
 	void OnTriggerEnter(Collider collider) {
 		Move move = collider.GetComponent<Move>();
-		if(move != null && !beingCarried) {
-			beingCarried = true;
-			carrying = move;
+		if(move != null && !beingCarried && !move.HasFood()) {
+			//beingCarried = true;
+			//carrying = move;
 			move.SetFood(gameObject);
 		}
 	}
 
+	public Move Carrying () {
+		return carrying;
+	}
+	
+	public void SetCarrying(GameObject carrying) {
+		if(carrying != null)
+			this.carrying = carrying.GetComponent<Move>();
+	}
+	
+	public bool BeingCarried () {
+		return beingCarried;
+	}
+	
 	public void SetBeingCarried(bool carried) {
 		this.beingCarried = carried;
 	}
