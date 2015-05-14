@@ -111,14 +111,6 @@ public class Move : MonoBehaviour
 				Filter ();
 				Debug.Log (myCurrentIntention.Intention ());
 			}
-			//Debug.Log(currentPlan.Count);
-			if(!Sound ()) {
-				Planner planner = CreateNewPlan ();
-				currentPlan = planner.Plan ();
-				currentAction = null;
-				currentActionHasEnded = false;
-				return;
-			}
 		}
 
 	}
@@ -248,7 +240,7 @@ public class Move : MonoBehaviour
 	//FIXME
 	bool CanMakeItThere(Vector3 there) {
 		float distance_to_object = Mathf.Sqrt(DistanceBetweenMeAndPoint (there));
-		return (HasHighLife () && distance_to_object <= 60) || (distance_to_object <= 40 && !HasLowLife ());
+		return (HasHighLife () && distance_to_object <= 80) || (distance_to_object <= 40 && !HasLowLife ());
 	}
 
 	void ChooseAction () {	
@@ -440,11 +432,9 @@ public class Move : MonoBehaviour
 		return currentPlan.Count == 0 && CurrentActionHasEnded ();
 	}
 
-	//FIXME
-	//CHECK
 	bool Reconsider () {
 		bool amIGoingToDie = HasFood () && HasLowLife () && !CanMakeItThere (myColonyPosition);
-		return EnemyAhead () || EnemyOnSight () || amIGoingToDie;
+		return EnemyAhead () || EnemyOnSight () || amIGoingToDie || SpecFoodOnSight ();
 	}
 
 
@@ -476,7 +466,6 @@ public class Move : MonoBehaviour
 						weight = 0.9f;
 						colony_multiplier = 0.5f;
 					} 
-					//FIXME!!! Special case must be reviewed
 					IntentionDetails intention = new IntentionDetails(Intention.GET_FOOD_AT,1.0f*weight,myColonyPosition);
 					myCurrentIntentions.Add (intention);
 					continue;
@@ -496,7 +485,6 @@ public class Move : MonoBehaviour
 				IntentionDetails intention = new IntentionDetails(Intention.POPULATE_AT, weight, myColonyPosition);
 				myCurrentIntentions.Add (intention);
 			} else if (desire == Desire.DEFEND_COL) {
-				//FIXME improve!!!
 				float defend_col_multiplier = 1.0f;
 				float number_of_ind_at_base = HowManyAtBase ();
 				//The more there are at base the less I want to go there
@@ -566,12 +554,11 @@ public class Move : MonoBehaviour
 			}
 		}
 		return myCurrentIntentions;
-
 	}
 
-	//FIXME
+
 	bool Sound () {
-		//is the plan going right?
+		//always true due to our implementation using navmesh
 		return true;
 	}
 
@@ -887,7 +874,7 @@ public class Move : MonoBehaviour
 
 	public void HelpRequest (string name, Vector3 position) {
 		if (position != this.transform.position) {
-
+			bool go_help_other = true;
 		}
 		
 	}
