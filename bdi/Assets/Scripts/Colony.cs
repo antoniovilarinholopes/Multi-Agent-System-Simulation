@@ -197,6 +197,8 @@ public class Colony : MonoBehaviour {
 		}
 		if (collider.gameObject.tag == "Monster") {
 			isUnderAttack = true;
+			Monster m = collider.GetComponent<Monster>();
+			m.SetInColony(true, gameObject);
 		}
 	}
 	

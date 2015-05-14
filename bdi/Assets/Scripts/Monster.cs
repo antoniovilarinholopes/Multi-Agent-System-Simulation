@@ -13,6 +13,8 @@ public class Monster : MonoBehaviour {
 	float flashSpeed = 5f;
 	Color flashColour = Color.red;
 	Color myColor;
+	Vector3 colonyPos;
+	bool inColony = false;
 
 	// Use this for initialization
 	void Start () {
@@ -23,9 +25,16 @@ public class Monster : MonoBehaviour {
 	void Update () {
 		if (AgentAhead ()) {
 			HitAgent();
-		} else {
+		} else if(inColony){
+			MoveToColony();
+		}else {
 			MoveRandomly();
 		}
+	}
+
+	void MoveToColony() {
+		float step = Time.deltaTime * SPEED;
+		transform.position = Vector3.MoveTowards(transform.position, colonyPos, step);
 	}
 
 	void MoveRandomly () {
@@ -88,5 +97,10 @@ public class Monster : MonoBehaviour {
 
 	void DropFood() {
 		Instantiate(specFood, transform.position, Quaternion.identity);
+	}
+
+	public void SetInColony (bool inColony, GameObject colony) {
+		this.inColony = inColony;
+		this.colonyPos = colony.transform.position;
 	}
 }
