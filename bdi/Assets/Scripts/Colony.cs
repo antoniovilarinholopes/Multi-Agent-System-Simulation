@@ -70,7 +70,7 @@ public class Colony : MonoBehaviour {
 			indComponent.SetMyColony(this.gameObject);
 		}
 		// Create special food and start auction every 20 secs
-		InvokeRepeating ("CreateSpecFood", 20f, 20f);
+		InvokeRepeating ("CreateSpecFood", 0f, 20f);
 	}
 
 	void Update () {
@@ -185,7 +185,6 @@ public class Colony : MonoBehaviour {
 			move.SetAtBase(false, null);
 		}
 		if (collider.gameObject.tag == "Monster") {
-			Debug.Log ("Exit dick: " + isUnderAttack);
 			isUnderAttack = false;
 		}
 	}
@@ -198,7 +197,6 @@ public class Colony : MonoBehaviour {
 		}
 		if (collider.gameObject.tag == "Monster") {
 			isUnderAttack = true;
-			Debug.Log ("Entered dick: " + isUnderAttack);
 			Monster m = collider.GetComponent<Monster>();
 			m.SetInColony(true, gameObject);
 		}

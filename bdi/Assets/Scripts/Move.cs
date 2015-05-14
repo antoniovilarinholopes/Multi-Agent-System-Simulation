@@ -24,7 +24,7 @@ public class Move : MonoBehaviour
 	float flashSpeed = 5f;
 	Vector3 myColonyPosition;
 	public float distance, smooth;
-	private float health = 20f;
+	private float health = 100f;
 	private float hitRate = 2f;
 	private const float SPEED = 10f;
 	NavMeshAgent navMeshAgent;
@@ -90,7 +90,11 @@ public class Move : MonoBehaviour
 			Filter ();
 			Planner planner = CreateNewPlan ();
 			currentPlan = planner.Plan ();
-
+			if(currentPlan.Count > 1) {
+				foreach(var planAction in currentPlan) {
+					Debug.Log (planAction.Action ());
+				}
+			}
 		} else {
 			ChooseAction ();
 			if(PlanIsEmpty () || Succeeded () || Impossible ()) {
@@ -102,7 +106,7 @@ public class Move : MonoBehaviour
 			ExecuteAction ();
 			Brf ();
 			if (Reconsider ()) {
-				Debug.Log ("Here");
+				//Debug.Log ("Here");
 				Options ();
 				Filter ();
 				Debug.Log (myCurrentIntention.Intention ());
@@ -153,7 +157,6 @@ public class Move : MonoBehaviour
 		}
 
 		if (EnemyAhead () && !AtBase ()) {
-			Debug.Log("Penis gigante a frente");
 			myDesires [Desire.HELP_SELF] = 1f;
 		} else if (HasLowLife ()) {
 			float help_self_multiplier = 0.9f;
@@ -165,10 +168,8 @@ public class Move : MonoBehaviour
 			myDesires [Desire.HELP_SELF] = 0.0f;
 		}
 
-		if (ColonyBeingAttacked ()) {
-			Debug.Log("Penis gigante a frente na colonia");
+		if (ColonyBeingAttacked ()) {;
 			if (AtBase ()) {
-				Debug.Log("Vou lutar o Penis gigante a frente na colonia");
 				myDesires [Desire.DEFEND_COL] = 1.0f;
 			} else {
 				float defend_col_multiplier = 1.0f;
@@ -383,10 +384,13 @@ public class Move : MonoBehaviour
 			}
 		} else if (action == Action.FIGHT_MONSTER) {
 			if (EnemyAhead ()) {
-				Debug.Log ("HERE");
 				this.HitEnemy ();
 			} else {
-				Debug.Log ("HE died");
+				Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
+				mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
+				enemy = null;
+				enemyAhead = false;
+				myColonyComp.SetIsUnderAttack(false);
 				currentActionHasEnded = true;
 			}
 		}
@@ -647,7 +651,7 @@ public class Move : MonoBehaviour
 	}
 
 	public bool HasLowLife () {
-		return health <= 5f;
+		return health <= 20f;
 	}
 	
 	bool HasFood ()	{
@@ -655,7 +659,7 @@ public class Move : MonoBehaviour
 	}
 
 	public bool HasHighLife () {
-		return health >= 18f;
+		return health >= 60f;
 	}
 
 	bool IsSomethingAhead() {
@@ -713,7 +717,6 @@ public class Move : MonoBehaviour
 			monster.TakeDamage (gameObject);
 		} else {
 			enemyAhead = false;
-
 		}
 	}
 
@@ -872,6 +875,7 @@ public class Move : MonoBehaviour
 				foodBeingCarried.transform.position = myPosition;
 			}
 			Object.Destroy(this.gameObject);
+			Object.Destroy(this);
 		}
 	}
 

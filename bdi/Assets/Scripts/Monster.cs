@@ -25,9 +25,9 @@ public class Monster : MonoBehaviour {
 	void Update () {
 		if (AgentAhead ()) {
 			HitAgent();
-		} else if(inColony){
+		} else if(inColony) {
 			MoveToColony();
-		}else {
+		} else {
 			MoveRandomly();
 		}
 	}
@@ -96,7 +96,9 @@ public class Monster : MonoBehaviour {
 	}
 
 	void DropFood() {
-		Instantiate(specFood, transform.position, Quaternion.identity);
+		Vector3 position = transform.position;
+		position.y = 1.5f;
+		Instantiate(specFood, position, Quaternion.identity);
 	}
 
 	public void SetInColony (bool inColony, GameObject colony) {

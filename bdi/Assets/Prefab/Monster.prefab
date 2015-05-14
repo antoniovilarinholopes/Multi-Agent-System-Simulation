@@ -3750,7 +3750,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f957a65410d72404387f58f3267db227, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  specFood: {fileID: 0}
+  specFood: {fileID: 131274, guid: 54e6dcb404d7c8148b7565de00954897, type: 2}
 --- !u!136 &13673436
 CapsuleCollider:
   m_ObjectHideFlags: 1

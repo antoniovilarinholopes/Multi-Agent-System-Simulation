@@ -32,6 +32,6 @@ public class ComunicationModule : MonoBehaviour {
 	}
 
 	public void GetSpecialFood(Vector3 position) {
-		move.AddToBeliefs("SpecialFood", position);
+		move.AddToBeliefs("SpecFood", position);
 	}
 }
