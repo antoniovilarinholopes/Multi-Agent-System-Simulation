@@ -4,15 +4,16 @@ using System.Collections;
 public class GenerateFood : MonoBehaviour {
 
 	public GameObject foodPrefab;
-	float spawnTime = 1f;
+	float spawnTime = 5.0f;
 	Vector3[] spawnPoints; 
 
 	// Use this for initialization
 	void Start () {
-		Vector3 pointForward = this.transform.position + Vector3.forward*5;
-		Vector3 pointLeft = this.transform.position + Vector3.left*5;
-		Vector3 pointRight = this.transform.position + Vector3.right*5;
-		Vector3 pointBack = this.transform.position + Vector3.back*5;
+		float mul_factor = 3.0f;
+		Vector3 pointForward = this.transform.position + Vector3.forward*mul_factor;
+		Vector3 pointLeft = this.transform.position + Vector3.left*mul_factor;
+		Vector3 pointRight = this.transform.position + Vector3.right*mul_factor;
+		Vector3 pointBack = this.transform.position + Vector3.back*mul_factor;
 		spawnPoints = new Vector3[]{pointForward, pointRight, pointLeft, pointBack};
 		InvokeRepeating ("SpawnFood", spawnTime, spawnTime);
 	}

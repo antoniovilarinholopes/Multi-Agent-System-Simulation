@@ -6,9 +6,7 @@ public class Wall : MonoBehaviour {
 
 	public float hitRate;
 	public float hitPoints = 20f;
-	//bool damaged = false;
 	Color myColor;
-	//public Image damageImage;
 	private float flashSpeed = 5f;
 	private Color flashColour = new Color(1f, 0f, 0f, 0.1f);
 
@@ -29,17 +27,12 @@ public class Wall : MonoBehaviour {
 	}
 
 	public void HitWall() {
-		//damageImage.color = flashColour;
-		//damaged = true;
 		Material mat = GetComponent<Renderer> ().material;
-		//Color color = mat.color;
 		mat.color = flashColour;
 		hitPoints -= Time.deltaTime * hitRate;
 		if (hitPoints <= 0) {
 			Object.Destroy(this.gameObject);
 		}
-		//damageImage.color = Color.Lerp (damageImage.color, Color.clear, flashSpeed * Time.deltaTime);
-		//Debug.Log("Hitpoints: " + hitPoints);
 		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
 	}
 }

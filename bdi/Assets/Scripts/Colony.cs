@@ -9,8 +9,7 @@ public class Colony : MonoBehaviour {
 	IList<GameObject> individuals;
 	float foodCount;
 	const float foodMultiplier = 5f;
-	const float specialFoodMultiplier = 10f;
-	const float timeToRemoveHealth = 10f;
+	const float specialFoodMultiplier = 15f;
 	float minLimitFoodToPopulate = 20f;
 	bool isUnderAttack;
 	string colonyLetter;
@@ -49,7 +48,7 @@ public class Colony : MonoBehaviour {
 			rotation = Random.Range(0, 4) * 90;
 			individual.transform.Rotate(0f, rotation, 0f);
 			individual.tag = playerTag;
-			Move indComponent = individual.GetComponent<Move> ();
+//			Move indComponent = individual.GetComponent<Move> ();
 			// Muda a cor do Robot2
 			individual.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color = individualColor;
 			individuals.Add (individual);
@@ -61,11 +60,13 @@ public class Colony : MonoBehaviour {
 		foodCount = 0;
 		isUnderAttack = false;
 		//Add colony to each of them
-		foreach (GameObject individual in individuals) {
-			if (individual == null) {
+		IList<GameObject> indList = new List<GameObject>(individuals);
+		foreach(GameObject ind in indList) {
+			if (ind == null) {
+				individuals.Remove(ind);
 				continue;
 			}
-			Move indComponent = individual.GetComponent<Move> ();
+			Move indComponent = ind.GetComponent<Move> ();
 			indComponent.SetColonyPosition(this.transform.position);
 			indComponent.SetMyColony(this.gameObject);
 		}
@@ -76,7 +77,8 @@ public class Colony : MonoBehaviour {
 	void Update () {
 		IList<GameObject> individualsAtBase = new List<GameObject>();
 		int individualsAtBaseCount = 0;
-		foreach (GameObject ind in individuals) {
+		IList<GameObject> indList = new List<GameObject>(individuals);
+		foreach(GameObject ind in indList) {
 			if (ind == null) {
 				individuals.Remove(ind);
 				continue;
@@ -123,8 +125,9 @@ public class Colony : MonoBehaviour {
 		}
 
 		if (foodCount > 0) { 
-			foreach (GameObject ind in individualsAtBase) {
+			foreach(GameObject ind in indList) {
 				if (ind == null) {
+					individuals.Remove(ind);
 					continue;
 				}
 				Move indComponent = ind.GetComponent<Move> ();
@@ -160,7 +163,8 @@ public class Colony : MonoBehaviour {
 
 	public float HowManyAtBase () {
 		float individualsAtBaseCount = 0f;
-		foreach (GameObject ind in individuals) {
+		IList<GameObject> indList = new List<GameObject>(individuals);
+		foreach(GameObject ind in indList) {
 			if (ind == null) {
 				individuals.Remove(ind);
 				continue;
@@ -219,7 +223,11 @@ public class Colony : MonoBehaviour {
 		}
 	}
 
-	public void Broadcast(SpeechAtc speechAct, string tag, Vector3 obj) {
+	public void Broadcast (SpeechAtc speechAct, string tag, Vector3 obj) {
+		if(speechAct == SpeechAtc.REQUEST_ADD) {
+			AuctionHelp(obj);
+			return;
+		}
 		IList<GameObject> indList = new List<GameObject>(individuals);
 		foreach(GameObject ind in indList) {
 			if (ind == null) {
@@ -234,9 +242,6 @@ public class Colony : MonoBehaviour {
 				case SpeechAtc.INFORM_REMOVE:
 					moveComp.RemoveBelief(tag, obj);
 					break;
-				case SpeechAtc.REQUEST_ADD:
-					moveComp.HelpRequest(tag,obj);
-					break;
 				default:
 					Debug.Log (speechAct + ":" + tag + ":" + obj);
 					break;
@@ -244,7 +249,7 @@ public class Colony : MonoBehaviour {
 		}
 	}
 
-	void CreateSpecFood() {
+	void CreateSpecFood () {
 		// Creates a special food somewhere in the map
 		float randX = Random.Range(-100, 100);
 		float randZ = Random.Range(-50, 50);
@@ -252,6 +257,30 @@ public class Colony : MonoBehaviour {
 		GameObject newSpecFood = Instantiate(prefabSpecFood, position, Quaternion.identity) as GameObject;
 
 		BeginAuction(newSpecFood);
+	}
+
+
+	void AuctionHelp (Vector3 objPosition) {
+		float bid = 0.0f;
+		float bestBid = float.MinValue;
+		ComunicationModule bestIndividual = null;
+		IList<GameObject> indList = new List<GameObject>(individuals);
+		foreach(GameObject ind in indList) {
+			if (ind == null) {
+				individuals.Remove(ind);
+				continue;
+			}
+			ComunicationModule comm = ind.GetComponent<ComunicationModule>();
+			bid = comm.RequestHelpBid(objPosition);
+			if(bestBid < bid) {
+				bestBid = bid;
+				bestIndividual = comm;
+			}
+		}
+		if(individuals.Count > 0) {
+			Debug.Log("BestBid: " + bestBid);
+			bestIndividual.ReceiveHelpRequest(objPosition);
+		}
 	}
 
 	void BeginAuction(GameObject specFood) {

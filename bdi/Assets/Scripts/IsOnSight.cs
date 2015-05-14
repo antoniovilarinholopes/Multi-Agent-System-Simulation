@@ -35,21 +35,20 @@ public class IsOnSight : MonoBehaviour {
 
 	void OnTriggerStay (Collider collider) {
 		if (collider.tag == "FoodSource") {
-			if(IsObjectOnSight(collider)) {;
+			if(IsObjectOnSight(collider)) {
+				Debug.Log(collider.gameObject.tag);
 				myRobot.SetIsFoodSourceOnSight(true, collider.gameObject);
 			} else {
 				myRobot.SetIsFoodSourceOnSight(false, null);
 			}
 		} else if (collider.tag == "Food") {
 			if (IsObjectOnSight (collider) && !collider.gameObject.GetComponent<PickUpable> ().BeingCarried()) {
-				//Debug.Log("Food on Sight");
 				myRobot.SetIsFoodOnSight (true, collider.gameObject);
 			} else {
 				myRobot.SetIsFoodOnSight (false, null);
 			}
 		} else if (collider.tag == "SpecFood") {
 			if (IsObjectOnSight (collider) && !collider.gameObject.GetComponent<PickUpable> ().BeingCarried()) {
-				//Debug.Log("SpecFood on Sight");
 				myRobot.SetIsSpecFoodOnSight (true, collider.gameObject);
 			} else {
 				myRobot.SetIsSpecFoodOnSight (false, null);
@@ -71,7 +70,6 @@ public class IsOnSight : MonoBehaviour {
 		} else if (collider.gameObject.tag.StartsWith ("Col")) {
 			if (collider.gameObject.tag.Substring (3) == myRobot.tag.Substring (6)) {
 				if (IsObjectOnSight (collider)) {
-					//Debug.Log("My colony on sight " + myRobot.tag + ":" + collider.gameObject.tag);
 					myRobot.SetIsColonyOnSight (true, collider.gameObject);
 				} else {
 					myRobot.SetIsColonyOnSight (false, null);;

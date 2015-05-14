@@ -37,6 +37,8 @@ public class Move : MonoBehaviour
 
 	ComunicationModule commModule;
 
+	Vector3 help_position;
+	//bool help_request;
 
 	void Awake () {
 		navMeshAgent = this.GetComponent<NavMeshAgent> ();
@@ -53,6 +55,7 @@ public class Move : MonoBehaviour
 		isSpecFoodOnSight = false;
 		currentPlan = null;
 		currentActionHasEnded = false;
+		//help_request = false;
 		currentAction = null;
 		myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
 
@@ -77,24 +80,12 @@ public class Move : MonoBehaviour
 		DecreaseLife(0.5f);
 		//single commitment
 
-		/*
-		foreach (var belief in myBeliefs.Keys) {
-			Debug.Log (myBeliefs[belief] + ":" + belief);
-		}
-		Debug.Log ("----");
-		*/
-
 		if (currentPlan == null) {
 			Brf ();
 			Options ();
 			Filter ();
 			Planner planner = CreateNewPlan ();
 			currentPlan = planner.Plan ();
-			if(currentPlan.Count > 1) {
-				foreach(var planAction in currentPlan) {
-					Debug.Log (planAction.Action ());
-				}
-			}
 		} else {
 			ChooseAction ();
 			if(PlanIsEmpty () || Succeeded () || Impossible ()) {
@@ -106,10 +97,8 @@ public class Move : MonoBehaviour
 			ExecuteAction ();
 			Brf ();
 			if (Reconsider ()) {
-				//Debug.Log ("Here");
 				Options ();
 				Filter ();
-				//Debug.Log (myCurrentIntention.Intention ());
 			}
 		}
 
@@ -160,7 +149,7 @@ public class Move : MonoBehaviour
 			myDesires [Desire.HELP_SELF] = 0.0f;
 		}
 
-		if (ColonyBeingAttacked ()) {;
+		if (ColonyBeingAttacked ()) {
 			if (AtBase ()) {
 				myDesires [Desire.DEFEND_COL] = 1.0f;
 			} else {
@@ -195,19 +184,25 @@ public class Move : MonoBehaviour
 
 		//FIXME 
 		//TODO HELP_OTHER, communication needed
-		myDesires [Desire.HELP_OTHER] = 0.0f;
+		if (HelpRequestReceived ()) {
+			myDesires [Desire.HELP_OTHER] = 1.0f;
+			RemoveRequestHelp ();
+		} else {
+			myDesires [Desire.HELP_OTHER] = 0.0f;
+		}
 	}
 
 	void Filter () {
 		//using my@(Beliefs,Intentions,Desires) update myIntentions
 		//Get my biggest desires
-		var biggestDesireValue = 0f;
+		var biggestDesireValue = 0.0f;
 		foreach (var desire in myDesires.Keys) {
 			if(myDesires [desire] > biggestDesireValue) {
 				biggestDesireValue = myDesires [desire];
 			}
 		}
 
+		//All the biggest desire
 		IList<Desire> myBiggestDesires = new List<Desire>() ;
 		foreach (var desire in myDesires.Keys) {
 			if(myDesires [desire] == biggestDesireValue) {
@@ -215,6 +210,7 @@ public class Move : MonoBehaviour
 			}
 		}
 
+		//Best intention
 		IList<IntentionDetails> myIntentions = RetrieveIntentionsFromDesires (myBiggestDesires);
 		myCurrentIntention = null;
 		float best_weight = 0.0f;
@@ -367,7 +363,6 @@ public class Move : MonoBehaviour
 			}
 			currentActionHasEnded = true;
 		} else if (action == Action.POPULATE) {
-			//FIXME
 			currentActionHasEnded = true;
 		} else if (action == Action.DESTROY_WALL) {
 			if (ObstacleAhead ()) {
@@ -387,11 +382,14 @@ public class Move : MonoBehaviour
 				currentActionHasEnded = true;
 			}
 		}
-		
 	}
 
 	bool FoodToPopulate () {
 		return myColonyComp.HasFoodToPopulate ();
+	}
+
+	bool HelpRequestReceived () {
+		return myBeliefs.ContainsValue ("HelpOther");
 	}
 
 	float HowManyAtBase () {
@@ -402,7 +400,7 @@ public class Move : MonoBehaviour
 		//is it possible that with my beliefs i complete my intention(s)?
 		// if the target position is no longer in our beliefs the plan becomes impossible
 
-		//If intention is a always possible one, return true
+		//If intention or action is a always possible one, return true
 		bool intentionsPossible = (myCurrentIntention.Intention () == Intention.EAT_FOOD) || (myCurrentIntention.Intention () == Intention.SEARCH_FOOD);
 		bool actionsPossible = currentAction != null && (currentAction.Action () == Action.PICK_FOOD || currentAction.Action () == Action.EAT || currentAction.Action () == Action.FIGHT_MONSTER);
 		if (intentionsPossible || actionsPossible) {
@@ -435,7 +433,12 @@ public class Move : MonoBehaviour
 
 	bool Reconsider () {
 		bool amIGoingToDie = HasFood () && HasLowLife () && !CanMakeItThere (myColonyPosition);
-		return EnemyAhead () || EnemyOnSight () || amIGoingToDie || SpecFoodOnSight () || (!FoodToPopulate () && myCurrentIntention.Intention () == Intention.POPULATE_AT);
+		bool haveIReceivedHelpReq = HelpRequestReceived ();
+		bool helpingOther = myCurrentIntention.Intention () == Intention.HELP_OTHER_AT;
+		if (helpingOther && !EnemyAhead () && !amIGoingToDie) {
+			return false;
+		}
+		return haveIReceivedHelpReq || EnemyAhead () || EnemyOnSight () || amIGoingToDie || SpecFoodOnSight () || (!FoodToPopulate () && myCurrentIntention.Intention () == Intention.POPULATE_AT);
 	}
 
 
@@ -446,43 +449,72 @@ public class Move : MonoBehaviour
 		foreach (var desire in desires) {
 			if (desire == Desire.HELP_SELF) {
 				float eat_food_weight = 1.0f;
-				if (EnemyAhead () || EnemyOnSight ()) {
-					IntentionDetails intention = new IntentionDetails(Intention.ATTACK_MONSTER_AT,1f,enemy.transform.position);
+				if (EnemyAhead ()) {
+					IntentionDetails intention = new IntentionDetails(Intention.ATTACK_MONSTER_AT,1.0f,enemy.transform.position);
+					myCurrentIntentions.Add (intention);
+					continue;
+				}
+				//FIXME
+				/*else if (EnemyOnSight ()) {
+					IntentionDetails intention = new IntentionDetails(Intention.ATTACK_MONSTER_AT,1f,enemyOnSight.transform.position);
 					myCurrentIntentions.Add (intention);
 					eat_food_weight = 0.5f;
-				}
+				}*/
 
-				if (HasFood()) {
+				if (HasFood() && HasLowLife ()) {
 					IntentionDetails intention = new IntentionDetails(Intention.EAT_FOOD,1.0f*eat_food_weight,this.transform.position);
 					myCurrentIntentions.Add (intention);
+					continue;
 				}
-				float colony_multiplier = 0.9f;
 
-				if (KnowWhereFoodIs ()) {
+				float colony_multiplier = 0.9f;
+				//Food source is always a better option
+				if(KnowWhereFoodSourceIs ()) {
+					Vector3 closestFoodSource = ClosestFoodSource ();
+					float distance_to_foodsource = DistanceBetweenMeAndPoint(closestFoodSource);
+					float distance_to_col = DistanceBetweenMeAndPoint(myColonyPosition);
+					float weight = 0.0f;
+					if (distance_to_foodsource < distance_to_col) {
+						weight = 0.9f;
+						IntentionDetails intention = new IntentionDetails(Intention.GET_FOOD_AT,1.0f*weight,myColonyPosition);
+						myCurrentIntentions.Add (intention);
+						continue;
+					} 	
+				} else if(KnowWhereSpecialFoodIs ()) {
+					Vector3 closestFood = ClosestSpecialFood ();
+					float distance_to_food = DistanceBetweenMeAndPoint(closestFood);
+					float distance_to_col = DistanceBetweenMeAndPoint(myColonyPosition);
+					float weight = 0.0f;
+					if (distance_to_food < distance_to_col) {
+						weight = 0.9f;
+						//colony_multiplier = 0.5f;
+						IntentionDetails intention = new IntentionDetails(Intention.GET_FOOD_AT,1.0f*weight,myColonyPosition);
+						myCurrentIntentions.Add (intention);
+						continue;
+					} 
+				} else if (KnowWhereFoodIs ()) {
 					Vector3 closestFood = ClosestFood ();
 					float distance_to_food = DistanceBetweenMeAndPoint(closestFood);
 					float distance_to_col = DistanceBetweenMeAndPoint(myColonyPosition);
 					float weight = 0.0f;
 					if (distance_to_food < distance_to_col) {
 						weight = 0.9f;
-						colony_multiplier = 0.5f;
+						//colony_multiplier = 0.5f;
+						IntentionDetails intention = new IntentionDetails(Intention.GET_FOOD_AT,1.0f*weight,myColonyPosition);
+						myCurrentIntentions.Add (intention);
+						//continue;
 					} 
-					IntentionDetails intention = new IntentionDetails(Intention.GET_FOOD_AT,1.0f*weight,myColonyPosition);
-					myCurrentIntentions.Add (intention);
-					continue;
 				}
+
 				IntentionDetails intention_details = new IntentionDetails(Intention.GOTO_COL_AT,1.0f*colony_multiplier, myColonyPosition);
 				myCurrentIntentions.Add (intention_details);
 			} else if (desire == Desire.POPULATE) {
-				float weight = 0.6f;
-				float dist_col_x = myColonyPosition.x - this.transform.position.x;
-				float dist_col_z = myColonyPosition.z - this.transform.position.z;
-				float distance_to_col = dist_col_x*dist_col_x + dist_col_z*dist_col_z;
-				float delta = 2f;
+				float weight = 0.8f;
+				float distance_to_col = Mathf.Sqrt(DistanceBetweenMeAndPoint(myColonyPosition));
+				float delta = 4.0f;
 				if (distance_to_col < delta || AtBase ()) {
 					weight = 0.9f;
 				}
-				Vector3 myPositon = this.transform.position;
 				IntentionDetails intention = new IntentionDetails(Intention.POPULATE_AT, weight, myColonyPosition);
 				myCurrentIntentions.Add (intention);
 			} else if (desire == Desire.DEFEND_COL) {
@@ -496,6 +528,7 @@ public class Move : MonoBehaviour
 				myCurrentIntentions.Add (intention);
 			} else if (desire == Desire.GET_FOOD) {
 
+				//FIXME
 				bool knowWhereSpecialFoodIs = KnowWhereSpecialFoodIs ();
 				if (knowWhereSpecialFoodIs) {
 					float special_food_multiplier = 0.9f;
@@ -508,8 +541,9 @@ public class Move : MonoBehaviour
 					}
 				}
 
+				//Only goes when there is not food on sight nor ahead
 				bool knowWhereFoodSourceIs = KnowWhereFoodSourceIs ();
-				if (knowWhereFoodSourceIs) {
+				if (knowWhereFoodSourceIs && !FoodOnSight () && !FoodAhead ()) {
 					float foodsource_mul = 0.9f;
 					Vector3 closestFoodSource = ClosestFoodSource ();
 					bool canMakeToFoodSource = CanMakeItThere(closestFoodSource);
@@ -550,6 +584,12 @@ public class Move : MonoBehaviour
 
 			} else {
 				//desire == Desire.HELP_OTHER
+				float help_multiplier = 1.0f;
+				/*if(HasLowLife ()) {
+					help_multiplier = 0.9f;
+				}*/
+				IntentionDetails intention = new IntentionDetails(Intention.HELP_OTHER_AT, 1f*help_multiplier, help_position);
+				myCurrentIntentions.Add (intention);
 
 			}
 		}
@@ -557,6 +597,18 @@ public class Move : MonoBehaviour
 	}
 
 
+	void RemoveRequestHelp () {
+		var beliefs = myBeliefs.Keys;
+		foreach(var belief in beliefs) {
+			if(myBeliefs [belief] == "HelpOther") {
+				help_position = belief;
+				myBeliefs.Remove(belief);
+				return;
+			}
+		}
+	}
+
+	//Not used
 	bool Sound () {
 		//always true due to our implementation using navmesh
 		return true;
@@ -775,6 +827,15 @@ public class Move : MonoBehaviour
 	 * Auxiliar
 	 */
 
+
+
+	void CallForHelpIfNeeded () {
+		bool aloneAtBase = AtBase () && HowManyAtBase () == 1;
+		if (aloneAtBase || HasLowLife () || HasFood ()) {
+			this.commModule.Broadcast(SpeechAtc.REQUEST_ADD, "Monster", this.transform.position);
+		}
+	}
+
 	void CleanSight () {
 		SetIsFoodOnSight (false, null);
 		SetIsEnemyOnSight (false, null);
@@ -905,8 +966,7 @@ public class Move : MonoBehaviour
 		this.isFoodSourceOnSight = isFoodSourceOnSight;
 		this.foodSourceOnSight = foodSourceOnSight;
 		if(isFoodSourceOnSight) {
-			//Vector3 foodSourcePosition = new Vector3(foodSourceOnSight.x, foodSourceOnSight.y, foodSourceOnSight.z);
-			Vector3 foodSourcePosition = foodOnSight.transform.position;
+			Vector3 foodSourcePosition = foodSourceOnSight.transform.position;
 			if (!myBeliefs.ContainsKey(foodSourcePosition)) {
 				commModule.Broadcast(SpeechAtc.INFORM_ADD, "FoodSource", foodSourcePosition);
 				AddToBeliefs("FoodSource", foodSourcePosition);
@@ -918,13 +978,11 @@ public class Move : MonoBehaviour
 		this.isFoodOnSight = isFoodOnSight;
 		this.foodOnSight = foodOnSight;
 		if(isFoodOnSight) {
-			//Vector3 foodPosition = new Vector3(foodOnSight.transform.position.x, foodOnSight.transform.position.y, foodOnSight.transform.position.z);
 			Vector3 foodPosition = foodOnSight.transform.position;
 			if(!myBeliefs.ContainsKey(foodPosition)) {
 				commModule.Broadcast(SpeechAtc.INFORM_ADD, "Food", foodPosition);
 				AddToBeliefs("Food", foodPosition);
 			}
-			//AddToBeliefs("Food", foodPosition);
 		}
 	}
 
@@ -932,7 +990,6 @@ public class Move : MonoBehaviour
 		this.isSpecFoodOnSight = isSpecFoodOnSight;
 		this.specFoodOnSight = specFoodOnSight;
 		if(isSpecFoodOnSight) {
-			//Vector3 foodPosition = new Vector3(specFoodOnSight.transform.position.x, specFoodOnSight.transform.position.y, specFoodOnSight.transform.position.z);
 			Vector3 foodPosition = specFoodOnSight.transform.position;
 			if(!myBeliefs.ContainsKey(foodPosition)) {
 				commModule.Broadcast(SpeechAtc.INFORM_ADD, "SpecFood", foodPosition);
@@ -944,16 +1001,18 @@ public class Move : MonoBehaviour
 	public void SetIsEnemyOnSight (bool isEnemyOnSight, GameObject enemyOnSight) {
 		this.isEnemyOnSight = isEnemyOnSight;
 		this.enemyOnSight = enemyOnSight;
-		// TODO: Do we need this? NO
-		//Vector3 enemyPosition = enemyOnSight.transform.position;
+		//FIXME CallForHelpIfNeeded ();
 	}
 
 	public void SetIsObstacleOnSight (bool isObstacleOnSight, GameObject obstacleOnSight) {
 		this.isObstacleOnSight = isObstacleOnSight;
 		this.obstacleOnSight = obstacleOnSight;
 		Vector3 obsPosition = obstacleOnSight.transform.position;
-		if(!myBeliefs.ContainsKey(obsPosition)) {
-			myBeliefs [obsPosition] = "Wall";
+		if(isObstacleOnSight) {
+			if(!myBeliefs.ContainsKey(obsPosition)) {
+				commModule.Broadcast(SpeechAtc.INFORM_ADD, "Wall", obsPosition);
+				AddToBeliefs("Wall", obsPosition);
+			}
 		}
 	}
 
@@ -967,14 +1026,11 @@ public class Move : MonoBehaviour
 	}
 	
 	public void SetEnemyInFront(GameObject enemy) {
-		if (HasLowLife () || HasFood ()) {
-			this.commModule.Broadcast(SpeechAtc.REQUEST_ADD, "Monster", this.transform.position);
-		}
+		CallForHelpIfNeeded ();
 		enemyAhead = true;
 		this.enemy = enemy;
 	}
-	
-	// Box collider (mundo) chama esta funcao quando o agente sai
+
 	public void SetWallAhead(GameObject wall) {
 		obstacleAhead = true;
 		this.wallObj = wall;
@@ -989,16 +1045,15 @@ public class Move : MonoBehaviour
 		this.atBase = atBase;
 		this.colony = colony;
 	}
-
-	// Called by monsters
+	
 	public void TakeDamage() {
 		Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
-		//Color color = mat.color;
 		mat.color = flashColour;
 		DecreaseLife (hitRate);
 
 		Debug.Log ("Agent Hitpoints: " + health);
 		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
+		Debug.Log ("Here");
 	}
 
 }
