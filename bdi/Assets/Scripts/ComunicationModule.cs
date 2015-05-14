@@ -22,11 +22,11 @@ public class ComunicationModule : MonoBehaviour {
 		float bid;
 		bid = 1/Mathf.Sqrt(move.DistanceBetweenMeAndPoint (position));
 		if(move.myCurrentIntention.Intention () == Intention.SEARCH_FOOD) {
-			bid *= 2;
+			bid *= 2f;
 		}
 
 		if(move.HasHighLife()) {
-			bid *= 1.5;
+			bid *= 1.5f;
 		}
 		return bid;
 	}

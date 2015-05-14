@@ -185,6 +185,7 @@ public class Colony : MonoBehaviour {
 			move.SetAtBase(false, null);
 		}
 		if (collider.gameObject.tag == "Monster") {
+			Debug.Log ("Exit dick: " + isUnderAttack);
 			isUnderAttack = false;
 		}
 	}
@@ -197,11 +198,26 @@ public class Colony : MonoBehaviour {
 		}
 		if (collider.gameObject.tag == "Monster") {
 			isUnderAttack = true;
+			Debug.Log ("Entered dick: " + isUnderAttack);
 			Monster m = collider.GetComponent<Monster>();
 			m.SetInColony(true, gameObject);
 		}
 	}
-	
+
+
+	void OnTriggerStay (Collider collider) {
+		//Debug.Log ("Enter " + collider.gameObject.tag.Substring(6));
+		if(collider.gameObject.tag.StartsWith("Player") && collider.gameObject.tag.Substring(6) == colonyLetter) {
+			Move move = collider.GetComponent<Move>();
+			move.SetAtBase(true, gameObject);
+		}
+		if (collider.gameObject.tag == "Monster") {
+			isUnderAttack = true;
+			Monster m = collider.GetComponent<Monster>();
+			m.SetInColony(true, gameObject);
+		}
+	}
+
 	public void Broadcast(SpeechAtc speechAct, string tag, Vector3 obj) {
 		IList<GameObject> indList = new List<GameObject>(individuals);
 		foreach(GameObject ind in indList) {
