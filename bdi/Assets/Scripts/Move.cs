@@ -29,7 +29,7 @@ public class Move : MonoBehaviour
 	private const float SPEED = 10f;
 	NavMeshAgent navMeshAgent;
 	Dictionary<Desire, float> myDesires;
-	IntentionDetails myCurrentIntention;
+	public IntentionDetails myCurrentIntention;
 	Dictionary<Vector3, string> myBeliefs;
 	bool currentActionHasEnded;
 	PlanAction currentAction;
@@ -314,7 +314,7 @@ public class Move : MonoBehaviour
 		return currentActionHasEnded;
 	}
 
-	float DistanceBetweenMeAndPoint (Vector3 target) {
+	public float DistanceBetweenMeAndPoint (Vector3 target) {
 		float distance_x = target.x - this.transform.position.x;
 		float distance_z = target.z - this.transform.position.z;
 		return distance_x*distance_x + distance_z*distance_z;
@@ -395,9 +395,12 @@ public class Move : MonoBehaviour
 	}
 
 	//FIXME
+	// CHECK
 	bool Impossible () {
 		//is it possible that with my beliefs i complete my intention(s)?
-		return false;
+		// if the target position is no longer in our beliefs the plan becomes impossible
+		return !myBeliefs.ContainsKey(myCurrentIntention.Position());
+		//return false;
 	}
 
 	bool KnowWhereFoodIs () {
@@ -421,8 +424,9 @@ public class Move : MonoBehaviour
 	}
 
 	//FIXME
+	//CHECK
 	bool Reconsider () {
-		return false;
+		return isEnemyOnSight;
 	}
 
 
@@ -878,7 +882,7 @@ public class Move : MonoBehaviour
 		}
 	}
 
-	// FIXME: Do we need the public here?
+	// FIXME: Do we need the public here? YES
 	public void SendBack () {
 		transform.Rotate (0f, 180f, 0f);
 		endOfWorld = false;
@@ -942,8 +946,8 @@ public class Move : MonoBehaviour
 	public void SetIsEnemyOnSight (bool isEnemyOnSight, GameObject enemyOnSight) {
 		this.isEnemyOnSight = isEnemyOnSight;
 		this.enemyOnSight = enemyOnSight;
-		// TODO: Do we need this?
-		Vector3 enemyPosition = enemyOnSight.transform.position;
+		// TODO: Do we need this? NO
+		//Vector3 enemyPosition = enemyOnSight.transform.position;
 	}
 
 	public void SetIsObstacleOnSight (bool isObstacleOnSight, GameObject obstacleOnSight) {
@@ -965,7 +969,7 @@ public class Move : MonoBehaviour
 	}
 	
 	public void SetEnemyInFront(GameObject enemy) {
-		//FIXME here should be done the broadcast?
+		//FIXME here should be done the broadcast? NO
 		enemyAhead = true;
 		this.enemy = enemy;
 	}

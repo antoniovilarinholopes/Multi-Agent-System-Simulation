@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class Colony : MonoBehaviour {
 	
 	public GameObject prefabInd;
+	public GameObject prefabSpecFood;
 	IList<GameObject> individuals;
 	public float foodCount;
 	const float foodMultiplier = 5f;
@@ -68,6 +69,8 @@ public class Colony : MonoBehaviour {
 			indComponent.SetColonyPosition(this.transform.position);
 			indComponent.SetMyColony(this.gameObject);
 		}
+		// Create special food and start auction every 20 secs
+		InvokeRepeating(CreateSpecFood, 20f, 20f);
 	}
 
 	void Update () {
@@ -220,6 +223,37 @@ public class Colony : MonoBehaviour {
 					break;
 			}
 		}
+	}
+
+	void CreateSpecFood() {
+		// Creates a special food somewhere in the map
+		float randX = Random.Range(-100, 100);
+		float randZ = Random.Range(-50, 50);
+		Vector3 position = new Vector3(randX, 1.5f, randZ);
+		GameObject newSpecFood = Instantiate(prefabSpecFood, position, Quaternion.identity) as GameObject;
+
+		BeginAuction(newSpecFood);
+	}
+
+	void BeginAuction(GameObject specFood) {
+		Vector3 specFoodPosition = specFood.transform.position;
+		float bid;
+		float bestBid = 0;
+		ComunicationModule bestIndividual;
+		IList<GameObject> indList = new List<GameObject>(individuals);
+		foreach(GameObject ind in indList) {
+			if (ind == null) {
+				individuals.Remove(ind);
+				continue;
+			}
+			ComunicationModule comm = ind.GetComponent<ComunicationModule>();
+			bid = comm.RequestBid(specFoodPosition);
+			if(bestBid < bid) {
+				bestBid = bid;
+				bestIndividual = comm;
+			}
+		}
+		// Add special food to best Agent beliefs
 	}
 
 }
