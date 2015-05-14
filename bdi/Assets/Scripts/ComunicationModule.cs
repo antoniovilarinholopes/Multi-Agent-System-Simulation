@@ -24,6 +24,10 @@ public class ComunicationModule : MonoBehaviour {
 		if(move.myCurrentIntention.Intention () == Intention.SEARCH_FOOD) {
 			bid *= 2;
 		}
+
+		if(move.HasHighLife()) {
+			bid *= 1.5;
+		}
 		return bid;
 	}
 

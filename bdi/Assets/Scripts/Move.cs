@@ -653,7 +653,7 @@ public class Move : MonoBehaviour
 		return hasFood;
 	}
 
-	bool HasHighLife () {
+	public bool HasHighLife () {
 		return health >= 18f;
 	}
 
