@@ -71,7 +71,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 117424}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6dd9fcc91871b374ab7acd75ab400a1a, type: 3}
+  m_Script: {fileID: 11500000, guid: 918b5809e1dcea6479166af8fec45c69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   foodPrefab: {fileID: 158226, guid: 7febf6bf2aa91c74ebff993a4f5d826b, type: 2}
