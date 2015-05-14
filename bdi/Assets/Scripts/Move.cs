@@ -88,10 +88,11 @@ public class Move : MonoBehaviour
 			Brf ();
 			Options ();
 			Filter ();
-
 			Planner planner = CreateNewPlan ();
 			currentPlan = planner.Plan ();
+
 		} else {
+			ChooseAction ();
 			if(PlanIsEmpty () || Succeeded () || Impossible ()) {
 				currentPlan = null;
 				currentAction = null;
@@ -108,6 +109,9 @@ public class Move : MonoBehaviour
 			if(!Sound ()) {
 				Planner planner = CreateNewPlan ();
 				currentPlan = planner.Plan ();
+				foreach (var planAction in currentPlan) {
+					Debug.Log(planAction.Action());
+				}
 				currentAction = null;
 				currentActionHasEnded = false;
 				//return;
@@ -129,13 +133,7 @@ public class Move : MonoBehaviour
 		// The beliefs are constantly updated with the IsOnSight.
 		// However it's necessary to update that in the position of the agent
 		// there is nothing but him. Necessary in cases such as picking up food.
-		//FIXME myPosition!!!!
 		Vector3 myPosition = this.transform.position;
-		if (myBeliefs.ContainsKey (myPosition) && myBeliefs [myPosition] != "MyCol") {
-			myBeliefs.Remove(myPosition);
-		}
-		//FIXME may cause problems with food sources
-		myPosition.y += 1.5f;
 		if (myBeliefs.ContainsKey (myPosition) && myBeliefs [myPosition] != "MyCol") {
 			myBeliefs.Remove(myPosition);
 		}
@@ -250,6 +248,20 @@ public class Move : MonoBehaviour
 		return (HasHighLife () && distance_to_object <= 60) || (distance_to_object <= 40 && !HasLowLife ());
 	}
 
+	void ChooseAction () {	
+		if (currentAction == null && currentPlan.Count > 0) {
+			currentAction = currentPlan.Dequeue ();
+		} else {
+			if (CurrentActionHasEnded () && currentPlan.Count == 0) {
+				//currentAction = null;
+				return;
+			} else if(CurrentActionHasEnded () && currentPlan.Count > 0) {
+				currentAction = currentPlan.Dequeue ();
+				currentActionHasEnded = false;
+			}
+		}
+	}
+
 	Vector3 ClosestFood () {
 		Vector3 closestFoodPosition = new Vector3(0f,0f,0f);
 		float minDist = float.MaxValue;
@@ -325,17 +337,6 @@ public class Move : MonoBehaviour
 
 	void ExecuteAction () {
 
-		if (currentAction == null && currentPlan.Count > 0) {
-			currentAction = currentPlan.Dequeue ();
-		} else {
-			if (CurrentActionHasEnded () && currentPlan.Count == 0) {
-				currentAction = null;
-				return;
-			} else if(CurrentActionHasEnded () && currentPlan.Count > 0) {
-				currentAction = currentPlan.Dequeue ();
-				currentActionHasEnded = false;
-			}
-		}
 		Action action = currentAction.Action ();
 		if (action == Action.MOVE_TO) {
 			Vector3 targetPosition = currentAction.Position ();;
@@ -370,7 +371,7 @@ public class Move : MonoBehaviour
 			}
 			currentActionHasEnded = true;
 		} else if (action == Action.POPULATE) {
-			//
+			//FIXME
 			currentActionHasEnded = true;
 		} else if (action == Action.DESTROY_WALL) {
 			if (ObstacleAhead ()) {
@@ -401,8 +402,16 @@ public class Move : MonoBehaviour
 	bool Impossible () {
 		//is it possible that with my beliefs i complete my intention(s)?
 		// if the target position is no longer in our beliefs the plan becomes impossible
+
+		//If intention is a always possible one, return true
 		bool intentionsPossible = (myCurrentIntention.Intention () == Intention.EAT_FOOD) || (myCurrentIntention.Intention () == Intention.SEARCH_FOOD);
-		return !intentionsPossible && !myBeliefs.ContainsKey(myCurrentIntention.Position());
+		bool actionsPossible = currentAction != null && (currentAction.Action () == Action.PICK_FOOD || currentAction.Action () == Action.EAT || currentAction.Action () == Action.FIGHT_MONSTER);
+		if (intentionsPossible || actionsPossible) {
+			return false; 
+		}
+
+		bool notPossible = currentAction == null || !myBeliefs.ContainsKey(currentAction.Position ());
+		return notPossible;
 	}
 
 	bool KnowWhereFoodIs () {
@@ -440,6 +449,7 @@ public class Move : MonoBehaviour
 			if (desire == Desire.HELP_SELF) {
 				float eat_food_weight = 1.0f;
 				if (EnemyAhead ()) {
+					Debug.Log ("WHAT");
 					IntentionDetails intention = new IntentionDetails(Intention.ATTACK_MONSTER_AT,1f,enemy.transform.position);
 					myCurrentIntentions.Add (intention);
 					eat_food_weight = 0.5f;
@@ -730,7 +740,6 @@ public class Move : MonoBehaviour
 	}
 
 	void PickFood () {
-		Debug.Log ("HEre");
 		this.foodAhead = false;
 		this.hasFood = true;
 		PickUpable foodComp = food.GetComponent<PickUpable> ();
