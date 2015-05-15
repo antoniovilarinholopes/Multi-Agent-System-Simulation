@@ -35,7 +35,7 @@ public class Colony : MonoBehaviour {
 		}
 
 		//FIXME
-		for(int i = 0; i < 2; i++) {
+		for(int i = 0; i < 1; i++) {
 			maxAttempts = 0;
 			// TODO: Ver clearSpace
 			do {
@@ -210,7 +210,7 @@ public class Colony : MonoBehaviour {
 		}
 	}
 
-
+	/*
 	void OnTriggerStay (Collider collider) {
 		//Debug.Log ("Enter " + collider.gameObject.tag.Substring(6));
 		if(collider.gameObject.tag.StartsWith("Player") && collider.gameObject.tag.Substring(6) == colonyLetter) {
@@ -222,7 +222,7 @@ public class Colony : MonoBehaviour {
 			Monster m = collider.GetComponent<Monster>();
 			m.SetInColony(true, gameObject);
 		}
-	}
+	}*/
 
 	public void Broadcast (SpeechAtc speechAct, string tag, Vector3 obj) {
 		if(speechAct == SpeechAtc.REQUEST_ADD) {
@@ -262,6 +262,32 @@ public class Colony : MonoBehaviour {
 
 
 	void AuctionHelp (Vector3 objPosition) {
+		/*float bid = 0.0f;
+		float bestBid = float.MinValue;
+		ComunicationModule bestIndividual = null;
+		IList<GameObject> indList = new List<GameObject>(individuals);
+		foreach(GameObject ind in indList) {
+			if (ind == null) {
+				individuals.Remove(ind);
+				continue;
+			}
+			ComunicationModule comm = ind.GetComponent<ComunicationModule>();
+			bid = comm.RequestBid(objPosition);
+			if(bestBid < bid) {
+				bestBid = bid;
+				bestIndividual = comm;
+			}
+		}*/
+
+		ComunicationModule bestIndividual = BestBid (objPosition);
+		if(individuals.Count > 0) {
+			//Debug.Log("BestBid Help: " + bestBid);
+			bestIndividual.ReceiveHelpRequest(objPosition);
+		}
+	}
+
+
+	ComunicationModule BestBid (Vector3 objPosition) {
 		float bid = 0.0f;
 		float bestBid = float.MinValue;
 		ComunicationModule bestIndividual = null;
@@ -272,21 +298,20 @@ public class Colony : MonoBehaviour {
 				continue;
 			}
 			ComunicationModule comm = ind.GetComponent<ComunicationModule>();
-			bid = comm.RequestHelpBid(objPosition);
+			bid = comm.RequestBid(objPosition);
 			if(bestBid < bid) {
 				bestBid = bid;
 				bestIndividual = comm;
 			}
 		}
-		if(individuals.Count > 0) {
-			Debug.Log("BestBid: " + bestBid);
-			bestIndividual.ReceiveHelpRequest(objPosition);
-		}
+		return bestIndividual;
 	}
+
+
 
 	void BeginAuction(GameObject specFood) {
 		Vector3 specFoodPosition = specFood.transform.position;
-		float bid;
+		/*float bid;
 		float bestBid = 0;
 		ComunicationModule bestIndividual = null;
 		IList<GameObject> indList = new List<GameObject>(individuals);
@@ -301,9 +326,10 @@ public class Colony : MonoBehaviour {
 				bestBid = bid;
 				bestIndividual = comm;
 			}
-		}
+		}*/
+		ComunicationModule bestIndividual = BestBid (specFoodPosition);
 		if(individuals.Count > 0) {
-			Debug.Log("BestBid: " + bestBid);
+			//Debug.Log("BestBid: " + bestBid);
 			// Add special food to best Agent beliefs
 			bestIndividual.GetSpecialFood(specFoodPosition);
 		}

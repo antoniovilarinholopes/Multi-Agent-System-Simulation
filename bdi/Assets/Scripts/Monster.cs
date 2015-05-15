@@ -51,7 +51,7 @@ public class Monster : MonoBehaviour {
 	void OnTriggerExit(Collider collider) {
 		Move move = collider.GetComponent<Move>();
 		if(move != null) {
-			move.SetEnemyInFront(null);
+			move.SetEnemyInFront(false, null);
 			SetAgentAhead(null, false);
 		}
 	}
@@ -59,7 +59,7 @@ public class Monster : MonoBehaviour {
 	void OnTriggerEnter(Collider collider) {
 		Move move = collider.GetComponent<Move>();
 		if(move != null) {
-			move.SetEnemyInFront(gameObject);
+			move.SetEnemyInFront(true, gameObject);
 			SetAgentAhead(collider.gameObject, true);
 		}
 	}
@@ -80,6 +80,9 @@ public class Monster : MonoBehaviour {
 		transform.LookAt (ind.transform.position);
 		hitPoints -= Time.deltaTime * hitRate;
 		if (hitPoints <= 0) {
+			Debug.Log ("Destroyed");
+			Move move = agent.GetComponent<Move>();
+			move.SetEnemyInFront(false, null);
 			DropFood();
 			Object.Destroy(this.gameObject);
 		}

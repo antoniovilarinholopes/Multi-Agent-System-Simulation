@@ -44,7 +44,6 @@ public class Move : MonoBehaviour
 		navMeshAgent = this.GetComponent<NavMeshAgent> ();
 		endOfWorld = false;
 		foodAhead = false;
-		enemyAhead = false;
 		hasFood = false;
 		atBase = false;
 		enemyAhead = false;
@@ -88,6 +87,11 @@ public class Move : MonoBehaviour
 			currentPlan = planner.Plan ();
 		} else {
 			ChooseAction ();
+
+			/*Debug.Log (myCurrentIntention.Intention ());
+			if (currentAction != null) {
+				Debug.Log (currentAction.Action ());
+			}*/
 			bool impossible = Impossible ();
 			if(PlanIsEmpty () || Succeeded () || impossible) {
 				if(currentAction != null && impossible) {
@@ -135,7 +139,6 @@ public class Move : MonoBehaviour
 
 		if (KnowWhereFoodIs () || KnowWhereFoodSourceIs ()) {
 			float get_food_multiplier = 0.9f;
-			//lower weight to get food if already carrying
 			if (HasFood ()) {
 				get_food_multiplier = 0.0f;
 			}
@@ -189,8 +192,6 @@ public class Move : MonoBehaviour
 			myDesires [Desire.POPULATE] = 0.0f;
 		}
 
-		//FIXME 
-		//TODO HELP_OTHER, communication needed
 		if (HelpRequestReceived ()) {
 			myDesires [Desire.HELP_OTHER] = 1.0f;
 			RemoveRequestHelp ();
@@ -378,15 +379,16 @@ public class Move : MonoBehaviour
 				currentActionHasEnded = true;
 			}
 		} else if (action == Action.FIGHT_MONSTER) {
-			if (EnemyAhead ()) {
-				this.HitEnemy ();
-			} else {
+			this.HitEnemy ();
+			Debug.Log ("Killing Him");
+			if(!EnemyAhead ()) {
+				Debug.Log ("He dead");
 				Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
 				mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
 				enemy = null;
 				enemyAhead = false;
 				myColonyComp.SetIsUnderAttack(false);
-				currentActionHasEnded = true;
+				currentActionHasEnded = true; 
 			}
 		}
 	}
@@ -450,6 +452,10 @@ public class Move : MonoBehaviour
 	}
 
 	bool Reconsider () {
+
+		if (currentAction.Action () == Action.FIGHT_MONSTER) {
+			return false;
+		}
 		bool amIGoingToDie = HasFood () && HasLowLife () && !CanMakeItThere (myColonyPosition);
 		bool haveIReceivedHelpReq = HelpRequestReceived ();
 		bool helpingOther = myCurrentIntention.Intention () == Intention.HELP_OTHER_AT;
@@ -769,7 +775,7 @@ public class Move : MonoBehaviour
 	}
 
 	private void HitEnemy() {
-		if (enemy != null) {
+		if (enemy != null && EnemyAhead ()) {
 			Monster monster = enemy.GetComponent<Monster> ();
 			monster.TakeDamage (gameObject);
 		} else {
@@ -851,6 +857,7 @@ public class Move : MonoBehaviour
 		bool aloneAtBase = AtBase () && HowManyAtBase () == 1;
 		if (aloneAtBase || HasLowLife () || HasFood ()) {
 			this.commModule.Broadcast(SpeechAtc.REQUEST_ADD, "Monster", this.transform.position);
+			RemoveRequestHelp ();
 		}
 	}
 
@@ -942,7 +949,6 @@ public class Move : MonoBehaviour
 
 	
 	public void EatFood (float healHealth) {
-		//Debug.Log (health);
 		this.health += healHealth;
 	}
 
@@ -1043,9 +1049,11 @@ public class Move : MonoBehaviour
 		endOfWorld = true;
 	}
 	
-	public void SetEnemyInFront(GameObject enemy) {
-		CallForHelpIfNeeded ();
-		enemyAhead = true;
+	public void SetEnemyInFront(bool enemyAhead, GameObject enemy) {
+		if (enemyAhead) {
+			CallForHelpIfNeeded ();
+		}
+		this.enemyAhead = enemyAhead;
 		this.enemy = enemy;
 	}
 
@@ -1069,9 +1077,8 @@ public class Move : MonoBehaviour
 		mat.color = flashColour;
 		DecreaseLife (hitRate);
 
-		Debug.Log ("Agent Hitpoints: " + health);
+		//Debug.Log ("Agent Hitpoints: " + health);
 		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
-		Debug.Log ("Here");
 	}
 
 }

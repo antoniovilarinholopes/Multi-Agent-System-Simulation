@@ -19,8 +19,12 @@ public class ComunicationModule : MonoBehaviour {
 	}
 
 	public float RequestBid (Vector3 position) {
-		float bid;
-		bid = 1/Mathf.Sqrt(move.DistanceBetweenMeAndPoint (position));
+		float bid = 1.0f;
+		float distance_to_position = Mathf.Sqrt(move.DistanceBetweenMeAndPoint (position));
+		if (distance_to_position != 0.0f) {
+			bid /= distance_to_position; 
+		}
+
 		if(move.myCurrentIntention.Intention () == Intention.SEARCH_FOOD) {
 			bid *= 2f;
 		}
@@ -28,6 +32,11 @@ public class ComunicationModule : MonoBehaviour {
 		if(move.HasHighLife()) {
 			bid *= 1.5f;
 		}
+
+		if (move.HasFood () || move.HasLowLife ()) {
+			bid = 0.01f;
+		}
+
 		return bid;
 	}
 
@@ -35,10 +44,13 @@ public class ComunicationModule : MonoBehaviour {
 		move.AddToBeliefs("SpecFood", position);
 	}
 
-
+	/*
 	public float RequestHelpBid (Vector3 position) {
 		float bid = 1.0f;
-		bid = 1/Mathf.Sqrt(move.DistanceBetweenMeAndPoint (position));
+		float distance_to_position = Mathf.Sqrt(move.DistanceBetweenMeAndPoint (position));
+		if (distance_to_position != 0.0f) {
+			bid /= distance_to_position; 
+		}
 		if(move.myCurrentIntention.Intention () == Intention.SEARCH_FOOD) {
 			bid *= 2.0f;
 		}
@@ -51,7 +63,7 @@ public class ComunicationModule : MonoBehaviour {
 			bid = 0.01f;
 		}
 		return bid;
-	}
+	}*/
 	
 	public void ReceiveHelpRequest(Vector3 position) {
 		move.AddToBeliefs("HelpOther", position);
