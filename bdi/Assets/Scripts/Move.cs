@@ -1071,7 +1071,7 @@ public class Move : MonoBehaviour
 		this.colonyOnSight = colonyOnSight;
 	}
 
-	public void SetEndOfWorld() {;
+	public void SetEndOfWorld() {
 		endOfWorld = true;
 	}
 	
