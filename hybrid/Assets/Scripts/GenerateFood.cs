@@ -29,7 +29,6 @@ public class GenerateFood : MonoBehaviour {
 				break;
 			}
 		}
-		//Debug.Log("SpawnPoint: " + spawnPoints[spawnPointIndex] + ", Clear: " + clearSpace);
 		if(clearSpace) {
 			Instantiate (foodPrefab, spawnPoints[spawnPointIndex], Quaternion.identity);
 		}

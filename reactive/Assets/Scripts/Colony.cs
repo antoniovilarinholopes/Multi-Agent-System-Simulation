@@ -44,6 +44,8 @@ public class Colony : MonoBehaviour {
 			rotation = Random.Range(0, 4) * 90;
 			individual.transform.Rotate(0f, rotation, 0f);
 			individual.tag = playerTag;
+			Move indComponent = individual.GetComponent<Move> ();
+			indComponent.SetColor(individualColor);
 			// Muda a cor do Robot2
 			individual.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color = individualColor;
 			individuals.Add (individual);

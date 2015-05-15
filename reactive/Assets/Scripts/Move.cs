@@ -28,7 +28,7 @@ public class Move : MonoBehaviour
 		isEnemyOnSight = false;
 		isObstacleOnSight = false;
 		isSpecFoodOnSight = false;
-		myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
+		//myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
 	}
 
 	/*
@@ -384,7 +384,9 @@ public class Move : MonoBehaviour
 		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
 	}
 
-
+	public void SetColor (Color myColor) {
+		this.myColor = myColor;
+	}
 
 
 }

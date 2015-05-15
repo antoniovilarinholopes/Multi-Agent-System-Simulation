@@ -54,14 +54,12 @@ public class IsOnSight : MonoBehaviour {
 			}
 		} else if (collider.tag == "Monster") {
 			if (IsObjectOnSight (collider)) {
-				//Debug.Log("Monster on Sight");
 				myRobot.SetIsEnemyOnSight (true, collider.gameObject);
 			} else {
 				myRobot.SetIsEnemyOnSight (false, null);
 			}
 		} else if (collider.tag == "Wall") {
 			if (IsObjectOnSight (collider)) {
-				//Debug.Log("Wall on Sight");
 				myRobot.SetIsObstacleOnSight (true, collider.gameObject);
 			} else {
 				myRobot.SetIsObstacleOnSight (false, null);

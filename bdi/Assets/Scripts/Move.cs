@@ -56,7 +56,7 @@ public class Move : MonoBehaviour
 		currentActionHasEnded = false;
 		//help_request = false;
 		currentAction = null;
-		myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
+		//myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
 
 		myDesires = new Dictionary<Desire,float> ();
 		InitializeDesires ();
@@ -85,16 +85,9 @@ public class Move : MonoBehaviour
 			Filter ();
 			Planner planner = CreateNewPlan ();
 			currentPlan = planner.Plan ();
-			foreach (var belief in myBeliefs.Keys) {
-				Debug.Log (belief + ":" + myBeliefs [belief] );
-			}
 		} else {
 			ChooseAction ();
 
-			/*Debug.Log (myCurrentIntention.Intention ());
-			if (currentAction != null) {
-				Debug.Log (currentAction.Action ());
-			}*/
 			bool impossible = Impossible ();
 			if(PlanIsEmpty () || Succeeded () || impossible) {
 				if(currentAction != null && impossible) {
@@ -385,9 +378,7 @@ public class Move : MonoBehaviour
 			}
 		} else if (action == Action.FIGHT_MONSTER) {
 			this.HitEnemy ();
-			Debug.Log ("Killing Him");
 			if(!EnemyAhead ()) {
-				Debug.Log ("He dead");
 				Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
 				mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
 				enemy = null;
@@ -901,7 +892,6 @@ public class Move : MonoBehaviour
 
 	void OnTriggerEnter(Collider collider) {
 		if(collider.gameObject.tag == "PlayerA" || collider.gameObject.tag == "PlayerB") {
-			//Debug.Log ("Collision");
 			agentAhead = true;
 		}
 	}
@@ -985,6 +975,10 @@ public class Move : MonoBehaviour
 	public void SetColonyPosition (Vector3 position) {
 		myColonyPosition = position;
 		myBeliefs [position] = "MyCol";
+	}
+
+	public void SetColor (Color myColor) {
+		this.myColor = myColor;
 	}
 
 	public void SetMyColony (GameObject myColony) {
@@ -1083,8 +1077,7 @@ public class Move : MonoBehaviour
 		Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
 		mat.color = flashColour;
 		DecreaseLife (hitRate);
-
-		//Debug.Log ("Agent Hitpoints: " + health);
+		
 		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
 	}
 

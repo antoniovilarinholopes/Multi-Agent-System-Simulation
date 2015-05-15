@@ -55,7 +55,7 @@ public class Move : MonoBehaviour
 		currentActionHasEnded = false;
 		//help_request = false;
 		currentAction = null;
-		myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
+		//myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
 
 		myDesires = new Dictionary<Desire,float> ();
 		InitializeDesires ();
@@ -419,9 +419,7 @@ public class Move : MonoBehaviour
 			}
 		} else if (action == Action.FIGHT_MONSTER) {
 			this.HitEnemy ();
-			Debug.Log ("Killing Him");
 			if(!EnemyAhead ()) {
-				Debug.Log ("He dead");
 				Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
 				mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
 				enemy = null;
@@ -935,7 +933,6 @@ public class Move : MonoBehaviour
 
 	void OnTriggerEnter(Collider collider) {
 		if(collider.gameObject.tag == "PlayerA" || collider.gameObject.tag == "PlayerB") {
-			//Debug.Log ("Collision");
 			agentAhead = true;
 		}
 	}
@@ -1118,8 +1115,11 @@ public class Move : MonoBehaviour
 		mat.color = flashColour;
 		DecreaseLife (hitRate);
 
-		//Debug.Log ("Agent Hitpoints: " + health);
 		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
+	}
+	
+	public void SetColor (Color myColor) {
+		this.myColor = myColor;
 	}
 
 }

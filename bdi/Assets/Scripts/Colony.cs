@@ -35,7 +35,7 @@ public class Colony : MonoBehaviour {
 		}
 
 		//FIXME
-		for(int i = 0; i < 1; i++) {
+		for(int i = 0; i < 8; i++) {
 			maxAttempts = 0;
 			// TODO: Ver clearSpace
 			do {
@@ -49,6 +49,8 @@ public class Colony : MonoBehaviour {
 			rotation = Random.Range(0, 4) * 90;
 			individual.transform.Rotate(0f, rotation, 0f);
 			individual.tag = playerTag;
+			Move indComponent = individual.GetComponent<Move> ();
+			indComponent.SetColor(individualColor);
 //			Move indComponent = individual.GetComponent<Move> ();
 			// Muda a cor do Robot2
 			individual.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color = individualColor;
@@ -119,6 +121,7 @@ public class Colony : MonoBehaviour {
 			individual.tag = playerTag;
 			Move indComponent = individual.GetComponent<Move> ();
 			indComponent.SetColonyPosition(this.transform.position);
+			indComponent.SetColor(individualColor);
 			indComponent.SetMyColony(this.gameObject);
 			// Muda a cor do Robot2
 			individual.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color = individualColor;
@@ -198,7 +201,6 @@ public class Colony : MonoBehaviour {
 	}
 
 	void OnTriggerEnter (Collider collider) {
-		//Debug.Log ("Enter " + collider.gameObject.tag.Substring(6));
 		if(collider.gameObject.tag.StartsWith("Player") && collider.gameObject.tag.Substring(6) == colonyLetter) {
 			Move move = collider.GetComponent<Move>();
 			move.SetAtBase(true, gameObject);
@@ -212,7 +214,6 @@ public class Colony : MonoBehaviour {
 
 	/*
 	void OnTriggerStay (Collider collider) {
-		//Debug.Log ("Enter " + collider.gameObject.tag.Substring(6));
 		if(collider.gameObject.tag.StartsWith("Player") && collider.gameObject.tag.Substring(6) == colonyLetter) {
 			Move move = collider.GetComponent<Move>();
 			move.SetAtBase(true, gameObject);
@@ -281,7 +282,6 @@ public class Colony : MonoBehaviour {
 
 		ComunicationModule bestIndividual = BestBid (objPosition);
 		if(individuals.Count > 0) {
-			//Debug.Log("BestBid Help: " + bestBid);
 			bestIndividual.ReceiveHelpRequest(objPosition);
 		}
 	}
@@ -329,7 +329,6 @@ public class Colony : MonoBehaviour {
 		}*/
 		ComunicationModule bestIndividual = BestBid (specFoodPosition);
 		if(individuals.Count > 0) {
-			//Debug.Log("BestBid: " + bestBid);
 			// Add special food to best Agent beliefs
 			bestIndividual.GetSpecialFood(specFoodPosition);
 		}
