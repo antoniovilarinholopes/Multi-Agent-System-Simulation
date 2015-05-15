@@ -442,30 +442,38 @@ public class Move : MonoBehaviour
 		return myColonyComp.HowManyAtBase ();
 	}
 
-	//FIXME
 	bool Impossible () {
 		//is it possible that with my beliefs i complete my intention(s)?
 		// if the target position is no longer in our beliefs the plan becomes impossible
-
+		
 		//If intention or action is a always possible one, return true
 		//bool intentionsPossible = (myCurrentIntention.Intention () == Intention.EAT_FOOD) || (myCurrentIntention.Intention () == Intention.SEARCH_FOOD);
 		bool intentionsPossible = (myCurrentIntention.Intention () == Intention.SEARCH_FOOD);
-		bool actionNotNull = currentAction != null;
 		if (intentionsPossible) { 
 			return false; 
 		}
-
+		
+		bool foodHasBeenPicked = myCurrentIntention.Intention () == Intention.GET_FOOD_AT && !myBeliefs.ContainsKey (myCurrentIntention.Position ());
+		if (foodHasBeenPicked && !HasFood ()) {
+			return true;
+		}
+		
+		bool stopAttackInvisibleMonster = myCurrentIntention.Intention () == Intention.ATTACK_MONSTER_AT && AtBase () && !ColonyBeingAttacked (); 
+		if (stopAttackInvisibleMonster) {
+			return true;
+		}
+		
+		bool actionNotNull = currentAction != null;
 		if (actionNotNull) {
 			bool pickFoodNotAhead = (currentAction.Action () == Action.PICK_FOOD && !FoodAhead ());
 			bool eatFoodNot = (currentAction.Action () == Action.EAT && !HasFood ());
 			bool fightMonsterNotAhead = (currentAction.Action () == Action.FIGHT_MONSTER && !EnemyAhead ());
 			return pickFoodNotAhead || eatFoodNot || fightMonsterNotAhead; 
-		} else {
-			return true;
 		}
-
-		bool notPossible = currentAction == null || !myBeliefs.ContainsKey(currentAction.Position ());
-		return notPossible;
+		
+		//bool notPossible = currentAction == null || !myBeliefs.ContainsKey(currentAction.Position ());
+		//Debug.Log (notPossible);
+		return true;
 	}
 
 	bool KnowWhereFoodIs () {
@@ -489,8 +497,8 @@ public class Move : MonoBehaviour
 	}
 
 	bool Reconsider () {
-
-		if (currentAction.Action () == Action.FIGHT_MONSTER) {
+		
+		if (currentAction.Action () == Action.FIGHT_MONSTER && EnemyAhead ()) {
 			return false;
 		}
 		bool amIGoingToDie = HasFood () && HasLowLife () && !CanMakeItThere (myColonyPosition);

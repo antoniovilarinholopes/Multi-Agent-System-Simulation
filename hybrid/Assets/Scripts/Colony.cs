@@ -8,15 +8,15 @@ public class Colony : MonoBehaviour {
 	public GameObject prefabSpecFood;
 	IList<GameObject> individuals;
 	float foodCount;
-	const float foodMultiplier = 5f;
+	const float foodMultiplier = 10f;
 	const float specialFoodMultiplier = 15f;
 	float minLimitFoodToPopulate = 20f;
 	bool isUnderAttack;
 	string colonyLetter;
-
+	
 	void Awake () {
 		individuals = new List<GameObject>();
-
+		
 		GameObject individual;
 		Vector3 position;
 		int rotation;
@@ -33,23 +33,23 @@ public class Colony : MonoBehaviour {
 			playerTag = "PlayerB";
 			colonyLetter = "B";
 		}
-
+		
 		//FIXME
-		for(int i = 0; i < 8; i++) {
+		for(int i = 0; i < 5; i++) {
 			maxAttempts = 0;
 			// TODO: Ver clearSpace
 			do {
 				position = new Vector3(Random.Range(-10f, 10f), 0, Random.Range(-10f, 10f));
 				position += transform.position;
-
+				
 				clearSpace = Physics.CheckSphere(position, 1f);
 			} while (maxAttempts < 100 && !clearSpace);
-
+			
 			individual = Instantiate(prefabInd, position, Quaternion.identity) as GameObject;
 			rotation = Random.Range(0, 4) * 90;
 			individual.transform.Rotate(0f, rotation, 0f);
 			individual.tag = playerTag;
-//			Move indComponent = individual.GetComponent<Move> ();
+			//			Move indComponent = individual.GetComponent<Move> ();
 			// Muda a cor do Robot2
 			individual.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color = individualColor;
 			Move indComponent = individual.GetComponent<Move> ();
@@ -57,7 +57,7 @@ public class Colony : MonoBehaviour {
 			individuals.Add (individual);
 		}
 	}
-
+	
 	// Use this for initialization
 	void Start () {
 		foodCount = 0;
@@ -76,7 +76,7 @@ public class Colony : MonoBehaviour {
 		// Create special food and start auction every 20 secs
 		InvokeRepeating ("CreateSpecFood", 20f, 20f);
 	}
-
+	
 	void Update () {
 		IList<GameObject> individualsAtBase = new List<GameObject>();
 		int individualsAtBaseCount = 0;
@@ -92,10 +92,10 @@ public class Colony : MonoBehaviour {
 				individualsAtBaseCount++;
 			}
 		}
-
+		
 		//If has plenty of food and at least 2 are at base, populate new inds
 		if (HasFoodToPopulate () && individualsAtBaseCount >= 2) {
-			minLimitFoodToPopulate += 4.0f;
+			minLimitFoodToPopulate += 7.0f;
 			Color individualColor;
 			string playerTag;
 			if(gameObject.tag == "ColA") {
@@ -124,10 +124,11 @@ public class Colony : MonoBehaviour {
 			indComponent.SetMyColony(this.gameObject);
 			// Muda a cor do Robot2
 			individual.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color = individualColor;
+			
 			indComponent.SetColor(individualColor);
 			this.individuals.Add (individual);
 		}
-
+		
 		if (foodCount > 0) { 
 			foreach(GameObject ind in indList) {
 				if (ind == null) {
@@ -142,7 +143,7 @@ public class Colony : MonoBehaviour {
 			}
 		}
 	}
-
+	
 	public void IncreaseFood (string food_tag) {
 		if (food_tag == "Food") {
 			foodCount += 1*foodMultiplier;
@@ -159,12 +160,12 @@ public class Colony : MonoBehaviour {
 			text.text = "" + foodCount;
 		}
 	}
-
-
+	
+	
 	public bool IsUnderAttack () {
 		return isUnderAttack;
 	}
-
+	
 	public float HowManyAtBase () {
 		float individualsAtBaseCount = 0f;
 		IList<GameObject> indList = new List<GameObject>(individuals);
@@ -180,16 +181,16 @@ public class Colony : MonoBehaviour {
 		}
 		return individualsAtBaseCount;
 	}
-
+	
 	public void SetIsUnderAttack(bool isUnderAttack) {
 		this.isUnderAttack = isUnderAttack;
 	}
-
+	
 	public bool HasFoodToPopulate () {
 		return foodCount >= minLimitFoodToPopulate;
 	}
-
-
+	
+	
 	void OnTriggerExit (Collider collider) {
 		if(collider.gameObject.tag.StartsWith("Player") && collider.gameObject.tag.Substring(6) == colonyLetter) {
 			Move move = collider.GetComponent<Move>();
@@ -199,7 +200,7 @@ public class Colony : MonoBehaviour {
 			isUnderAttack = false;
 		}
 	}
-
+	
 	void OnTriggerEnter (Collider collider) {
 		//Debug.Log ("Enter " + collider.gameObject.tag.Substring(6));
 		if(collider.gameObject.tag.StartsWith("Player") && collider.gameObject.tag.Substring(6) == colonyLetter) {
@@ -212,7 +213,7 @@ public class Colony : MonoBehaviour {
 			m.SetInColony(true, gameObject);
 		}
 	}
-
+	
 	/*
 	void OnTriggerStay (Collider collider) {
 		//Debug.Log ("Enter " + collider.gameObject.tag.Substring(6));
@@ -226,7 +227,7 @@ public class Colony : MonoBehaviour {
 			m.SetInColony(true, gameObject);
 		}
 	}*/
-
+	
 	public void Broadcast (SpeechAtc speechAct, string tag, Vector3 obj) {
 		if(speechAct == SpeechAtc.REQUEST_ADD) {
 			AuctionHelp(obj);
@@ -240,30 +241,30 @@ public class Colony : MonoBehaviour {
 			}
 			Move moveComp = ind.GetComponent<Move>();
 			switch (speechAct) {
-				case SpeechAtc.INFORM_ADD: 
-					moveComp.AddToBeliefs(tag, obj);
-					break;
-				case SpeechAtc.INFORM_REMOVE:
-					moveComp.RemoveBelief(tag, obj);
-					break;
-				default:
-					Debug.Log (speechAct + ":" + tag + ":" + obj);
-					break;
+			case SpeechAtc.INFORM_ADD: 
+				moveComp.AddToBeliefs(tag, obj);
+				break;
+			case SpeechAtc.INFORM_REMOVE:
+				moveComp.RemoveBelief(tag, obj);
+				break;
+			default:
+				Debug.Log (speechAct + ":" + tag + ":" + obj);
+				break;
 			}
 		}
 	}
-
+	
 	void CreateSpecFood () {
 		// Creates a special food somewhere in the map
 		float randX = Random.Range(-100, 100);
 		float randZ = Random.Range(-50, 50);
 		Vector3 position = new Vector3(randX, 1.5f, randZ);
 		GameObject newSpecFood = Instantiate(prefabSpecFood, position, Quaternion.identity) as GameObject;
-
+		
 		BeginAuction(newSpecFood);
 	}
-
-
+	
+	
 	void AuctionHelp (Vector3 objPosition) {
 		/*float bid = 0.0f;
 		float bestBid = float.MinValue;
@@ -281,15 +282,15 @@ public class Colony : MonoBehaviour {
 				bestIndividual = comm;
 			}
 		}*/
-
+		
 		ComunicationModule bestIndividual = BestBid (objPosition);
 		if(individuals.Count > 0) {
 			//Debug.Log("BestBid Help: " + bestBid);
 			bestIndividual.ReceiveHelpRequest(objPosition);
 		}
 	}
-
-
+	
+	
 	ComunicationModule BestBid (Vector3 objPosition) {
 		float bid = 0.0f;
 		float bestBid = float.MinValue;
@@ -309,9 +310,9 @@ public class Colony : MonoBehaviour {
 		}
 		return bestIndividual;
 	}
-
-
-
+	
+	
+	
 	void BeginAuction(GameObject specFood) {
 		Vector3 specFoodPosition = specFood.transform.position;
 		/*float bid;
@@ -337,5 +338,5 @@ public class Colony : MonoBehaviour {
 			bestIndividual.GetSpecialFood(specFoodPosition);
 		}
 	}
-
+	
 }

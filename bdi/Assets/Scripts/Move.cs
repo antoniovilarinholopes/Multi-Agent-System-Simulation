@@ -78,6 +78,10 @@ public class Move : MonoBehaviour
 		DecreaseLife(0.5f);
 		//single commitment
 
+		foreach (var belief in myBeliefs.Keys) {
+			Debug.Log (belief + ":" + myBeliefs [belief]);
+		}
+		Debug.Log ("---------------");
 		if (currentPlan == null) {
 			Brf ();
 			Options ();
@@ -87,11 +91,11 @@ public class Move : MonoBehaviour
 		} else {
 			ChooseAction ();
 
-			/*Debug.Log (myCurrentIntention.Intention ());*/
+			/*Debug.Log (myCurrentIntention.Intention ());
 			if (currentAction != null) {
 				Debug.Log (currentAction.Action ());
 				Debug.Log (myCurrentIntention.Intention ());
-			}
+			}*/
 			bool impossible = Impossible ();
 			if(PlanIsEmpty () || Succeeded () || impossible) {
 				if(currentAction != null && impossible) {
@@ -416,6 +420,17 @@ public class Move : MonoBehaviour
 		if (intentionsPossible) { 
 			return false; 
 		}
+
+		bool foodHasBeenPicked = myCurrentIntention.Intention () == Intention.GET_FOOD_AT && !myBeliefs.ContainsKey (myCurrentIntention.Position ());
+		if (foodHasBeenPicked && !HasFood ()) {
+			return true;
+		}
+
+		bool stopAttackInvisibleMonster = myCurrentIntention.Intention () == Intention.ATTACK_MONSTER_AT && AtBase () && !ColonyBeingAttacked (); 
+		if (stopAttackInvisibleMonster) {
+			return true;
+		}
+
 		bool actionNotNull = currentAction != null;
 		if (actionNotNull) {
 			bool pickFoodNotAhead = (currentAction.Action () == Action.PICK_FOOD && !FoodAhead ());
@@ -424,8 +439,9 @@ public class Move : MonoBehaviour
 			return pickFoodNotAhead || eatFoodNot || fightMonsterNotAhead; 
 		}
 
-		bool notPossible = currentAction == null || !myBeliefs.ContainsKey(currentAction.Position ());
-		return notPossible;
+		//bool notPossible = currentAction == null || !myBeliefs.ContainsKey(currentAction.Position ());
+		//Debug.Log (notPossible);
+		return true;
 	}
 
 	bool KnowWhereFoodIs () {
@@ -450,7 +466,7 @@ public class Move : MonoBehaviour
 
 	bool Reconsider () {
 
-		if (currentAction.Action () == Action.FIGHT_MONSTER) {
+		if (currentAction.Action () == Action.FIGHT_MONSTER && EnemyAhead ()) {
 			return false;
 		}
 		bool amIGoingToDie = HasFood () && HasLowLife () && !CanMakeItThere (myColonyPosition);
@@ -470,7 +486,7 @@ public class Move : MonoBehaviour
 		foreach (var desire in desires) {
 			if (desire == Desire.HELP_SELF) {
 				float eat_food_weight = 1.0f;
-				if (EnemyAhead ()) {
+				if (EnemyAhead () && enemy != null) {
 					IntentionDetails intention = new IntentionDetails(Intention.ATTACK_MONSTER_AT,1.0f,enemy.transform.position);
 					myCurrentIntentions.Add (intention);
 					continue;

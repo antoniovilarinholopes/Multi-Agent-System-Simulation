@@ -8,7 +8,7 @@ public class Colony : MonoBehaviour {
 	public GameObject prefabSpecFood;
 	IList<GameObject> individuals;
 	float foodCount;
-	const float foodMultiplier = 5f;
+	const float foodMultiplier = 10f;
 	const float specialFoodMultiplier = 15f;
 	float minLimitFoodToPopulate = 20f;
 	bool isUnderAttack;
@@ -35,7 +35,7 @@ public class Colony : MonoBehaviour {
 		}
 
 		//FIXME
-		for(int i = 0; i < 8; i++) {
+		for(int i = 0; i < 5; i++) {
 			maxAttempts = 0;
 			// TODO: Ver clearSpace
 			do {
@@ -95,7 +95,7 @@ public class Colony : MonoBehaviour {
 
 		//If has plenty of food and at least 2 are at base, populate new inds
 		if (HasFoodToPopulate () && individualsAtBaseCount >= 2) {
-			minLimitFoodToPopulate += 4.0f;
+			minLimitFoodToPopulate += 7.0f;
 			Color individualColor;
 			string playerTag;
 			if(gameObject.tag == "ColA") {
