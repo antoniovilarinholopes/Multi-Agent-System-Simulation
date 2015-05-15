@@ -838,12 +838,12 @@ public class Move : MonoBehaviour
 		float multiplier = 2.0f;
 		if (rand <= 2) {
 			//transform.Rotate (0f,-90f,0f);
-			return this.transform.position + Vector3.left*multiplier;
+			return this.transform.position - this.transform.right*multiplier;
 		} else if(rand <= 4) {
-			return this.transform.position + Vector3.right*multiplier;
+			return this.transform.position + this.transform.right*multiplier;
 				//transform.Rotate (0f,90f,0f);
 		} else {
-			return this.transform.position + Vector3.forward*multiplier;
+			return this.transform.position + this.transform.forward*multiplier;
 		}
 	}
 
