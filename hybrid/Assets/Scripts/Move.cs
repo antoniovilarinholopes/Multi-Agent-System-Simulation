@@ -38,7 +38,6 @@ public class Move : MonoBehaviour
 	ComunicationModule commModule;
 
 	Vector3 help_position;
-	//bool help_request;
 
 	void Awake () {
 		navMeshAgent = this.GetComponent<NavMeshAgent> ();
@@ -86,7 +85,6 @@ public class Move : MonoBehaviour
 
 
 		if (UseReactiveLayer ()) {
-			Debug.Log ("Using Hybrid");
 			currentPlan = null;
 			currentAction = null;
 			currentActionHasEnded = false;
@@ -103,18 +101,7 @@ public class Move : MonoBehaviour
 					plan.Enqueue(new PlanAction(Action.MOVE_TO, myColonyPosition));
 					plan.Enqueue(new PlanAction(Action.DROP_FOOD, myColonyPosition));
 					currentPlan = plan; 
-				} else if (food.tag == "SpecFood") {
-					PickUpable foodBeingCarried = this.food.GetComponent<PickUpable>();
-					foodBeingCarried.SetBeingCarried(false);
-					Vector3 myPosition = this.transform.position;
-					myPosition.y = 1.5f;
-					foodBeingCarried.transform.position = myPosition;
-					PickFood ();
-					Queue<PlanAction> plan = new Queue<PlanAction> ();
-					plan.Enqueue(new PlanAction(Action.MOVE_TO, myColonyPosition));
-					plan.Enqueue(new PlanAction(Action.DROP_FOOD, myColonyPosition));
-					currentPlan = plan;
-				}
+				} 
 			}
 		} else {
 			if (currentPlan == null) {

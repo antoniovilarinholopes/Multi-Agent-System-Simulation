@@ -85,6 +85,9 @@ public class Move : MonoBehaviour
 			Filter ();
 			Planner planner = CreateNewPlan ();
 			currentPlan = planner.Plan ();
+			foreach (var belief in myBeliefs.Keys) {
+				Debug.Log (belief + ":" + myBeliefs [belief] );
+			}
 		} else {
 			ChooseAction ();
 
@@ -131,6 +134,7 @@ public class Move : MonoBehaviour
 		Vector3 myPosition = this.transform.position;
 		if (myBeliefs.ContainsKey (myPosition) && myBeliefs [myPosition] != "MyCol") {
 			myBeliefs.Remove(myPosition);
+			commModule.Broadcast(SpeechAtc.INFORM_REMOVE, myBeliefs [myPosition], myPosition);
 		}
 	}
 
