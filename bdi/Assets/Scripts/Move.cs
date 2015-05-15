@@ -344,7 +344,8 @@ public class Move : MonoBehaviour
 			float distance_to_target = Mathf.Sqrt(DistanceBetweenMeAndPoint(targetPosition));
 			bool isSomethingAhead = IsSomethingAhead();
 			bool populateEnded = myCurrentIntention.Intention () == Intention.POPULATE_AT && AtBase ();
-			if ((populateEnded) || (equal_x && equal_z) || (isSomethingAhead && distance_to_target <= 1.5f)) {
+			bool stopBeforeFoodSource = myCurrentIntention.Intention () == Intention.GOTO_FOODSOURCE_AT && distance_to_target <= 4.0f;
+			if ((stopBeforeFoodSource) || (populateEnded) || (equal_x && equal_z) || (isSomethingAhead && distance_to_target <= 1.5f)) {
 				currentActionHasEnded = true;
 				return;
 			} 
