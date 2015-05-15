@@ -174,8 +174,10 @@ public class Move : MonoBehaviour
 			Monster monster = enemy.GetComponent<Monster> ();
 			monster.TakeDamage (gameObject);
 		} else {
-			enemyInAhead = false;
 
+			enemyInAhead = false;
+			Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
+			mat.color = myColor;
 		}
 	}
 

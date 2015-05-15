@@ -785,6 +785,8 @@ public class Move : MonoBehaviour
 			monster.TakeDamage (gameObject);
 		} else {
 			enemyAhead = false;
+			Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
+			mat.color = myColor;
 		}
 	}
 
