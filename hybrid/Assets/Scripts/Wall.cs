@@ -21,8 +21,12 @@ public class Wall : MonoBehaviour {
 
 	void OnTriggerEnter(Collider collider) {
 		Move move = collider.GetComponent<Move>();
+		Monster monster = collider.GetComponent<Monster>();
 		if(move != null) {
 			move.SetWallAhead(this.gameObject);
+		}
+		if(monster !=null) {
+			monster.SendBack();
 		}
 	}
 
