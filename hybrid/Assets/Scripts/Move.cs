@@ -77,43 +77,93 @@ public class Move : MonoBehaviour
 		// Decreases Agent life over time
 		// Value can be a public variable
 		DecreaseLife(0.5f);
-		//single commitment
 
-		if (currentPlan == null) {
-			Brf ();
-			Options ();
-			Filter ();
-			Planner planner = CreateNewPlan ();
-			currentPlan = planner.Plan ();
-		} else {
-			ChooseAction ();
+		//The Hybrid approach is a vertical one pass layered one, first see if 
+		//the percepts in reactive approach and then pass to deliberative the control.
+		//The reactive layer is the one innerently connected to the sensors, although
+		//with the approach of using unity the deliberative one is also connected to the 
+		//sensors. However, the lower one takes the decision (analgously with Subsumption)
 
-			/*Debug.Log (myCurrentIntention.Intention ());
-			if (currentAction != null) {
-				Debug.Log (currentAction.Action ());
-			}*/
-			bool impossible = Impossible ();
-			if(PlanIsEmpty () || Succeeded () || impossible) {
-				if(currentAction != null && impossible) {
-					bool removeBelief = (myBeliefs.ContainsKey(myCurrentIntention.Position ()) && myBeliefs [myCurrentIntention.Position ()] != "MyCol");
-					if (removeBelief) {
-						myBeliefs.Remove(myCurrentIntention.Position ());
-					}
-				} 
-				currentPlan = null;
-				currentAction = null;
-				currentActionHasEnded = false;
-				return;
+
+		if (UseReactiveLayer ()) {
+			Debug.Log ("Using Hybrid");
+			currentPlan = null;
+			currentAction = null;
+			currentActionHasEnded = false;
+			if (EnemyAhead ()) {
+				HitEnemy ();
+				Queue<PlanAction> plan = new Queue<PlanAction> ();
+				plan.Enqueue(new PlanAction(Action.FIGHT_MONSTER));
+				currentPlan = plan;
+				//myCurrentIntention = new IntentionDetails(Intention.ATTACK_MONSTER_AT, 1.0f, enemy.transform.position);
+			} else if (FoodAhead ()) {
+				if(!HasFood ()) {
+					PickFood ();
+					Queue<PlanAction> plan = new Queue<PlanAction> ();
+					plan.Enqueue(new PlanAction(Action.MOVE_TO, myColonyPosition));
+					plan.Enqueue(new PlanAction(Action.DROP_FOOD, myColonyPosition));
+					currentPlan = plan; 
+				} else if (food.tag == "SpecFood") {
+					PickUpable foodBeingCarried = this.food.GetComponent<PickUpable>();
+					foodBeingCarried.SetBeingCarried(false);
+					Vector3 myPosition = this.transform.position;
+					myPosition.y = 1.5f;
+					foodBeingCarried.transform.position = myPosition;
+					PickFood ();
+					Queue<PlanAction> plan = new Queue<PlanAction> ();
+					plan.Enqueue(new PlanAction(Action.MOVE_TO, myColonyPosition));
+					plan.Enqueue(new PlanAction(Action.DROP_FOOD, myColonyPosition));
+					currentPlan = plan;
+				}
 			}
-			ExecuteAction ();
-			Brf ();
-			if (Reconsider ()) {
+		} else {
+			if (currentPlan == null) {
+				Brf ();
 				Options ();
 				Filter ();
+				Planner planner = CreateNewPlan ();
+				currentPlan = planner.Plan ();
+			} else {
+				ChooseAction ();
+
+				bool impossible = Impossible ();
+				if (PlanIsEmpty () || Succeeded () || impossible) {
+					if (currentAction != null && impossible) {
+						bool removeBelief = (myBeliefs.ContainsKey (myCurrentIntention.Position ()) && myBeliefs [myCurrentIntention.Position ()] != "MyCol");
+						if (removeBelief) {
+							myBeliefs.Remove (myCurrentIntention.Position ());
+						}
+					} 
+					currentPlan = null;
+					currentAction = null;
+					currentActionHasEnded = false;
+					return;
+				}
+				ExecuteAction ();
+				Brf ();
+				if (Reconsider ()) {
+					Options ();
+					Filter ();
+				}
 			}
 		}
 
 	}
+
+
+	/*
+	 * Hybrid mediator and aux
+	 */
+
+
+	bool UseReactiveLayer () {
+		bool intentionToReact = (myCurrentIntention.Intention () == Intention.SEARCH_FOOD || myCurrentIntention.Intention () == Intention.GET_FOOD_AT || myCurrentIntention.Intention () == Intention.GOTO_FOODSOURCE_AT || myCurrentIntention.Intention () == Intention.GOTO_COL_AT);
+		bool foodAheadNotTheOneIWant = FoodAhead () && (food.transform.position != myCurrentIntention.Position ()) && !HasFood ();
+		return EnemyAhead () || (intentionToReact && foodAheadNotTheOneIWant);
+	}
+
+
+
 
 	/*
 	 * BDI
