@@ -813,6 +813,11 @@ public class Move : MonoBehaviour
 		/*transform.Rotate (0f,-90f,0f);
 		return this.transform.position + this.transform.position.left*multiplier;
 		*/
+		/*
+		if (EndOfWorld ()) {
+			endOfWorld = false;
+			return this.transform.position - this.transform.forward*multiplier;
+		}*/
 		if (rand <= 2) {
 			//transform.Rotate (0f,-90f,0f);
 			return this.transform.position - this.transform.right*multiplier;
@@ -1066,7 +1071,7 @@ public class Move : MonoBehaviour
 		this.colonyOnSight = colonyOnSight;
 	}
 
-	public void SetEndOfWorld() {
+	public void SetEndOfWorld() {;
 		endOfWorld = true;
 	}
 	

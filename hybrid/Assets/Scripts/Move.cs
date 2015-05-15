@@ -842,6 +842,10 @@ public class Move : MonoBehaviour
 	Vector3 MoveRandomly () {
 		int rand = Random.Range(1,100);
 		float multiplier = 2.0f;
+		/*if (EndOfWorld ()) {
+			endOfWorld = false;
+			return this.transform.position - this.transform.forward*multiplier;
+		}*/
 		if (rand <= 2) {
 			//transform.Rotate (0f,-90f,0f);
 			return this.transform.position - this.transform.right*multiplier;
