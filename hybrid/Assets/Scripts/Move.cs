@@ -55,7 +55,7 @@ public class Move : MonoBehaviour
 		currentActionHasEnded = false;
 		//help_request = false;
 		currentAction = null;
-		myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
+		//myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
 
 		myDesires = new Dictionary<Desire,float> ();
 		InitializeDesires ();
@@ -1015,6 +1015,10 @@ public class Move : MonoBehaviour
 
 	// Setters
 
+
+	public void SetColor (Color myColor) {
+		this.myColor = myColor;
+	}
 
 	public void SetColonyPosition (Vector3 position) {
 		myColonyPosition = position;

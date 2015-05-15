@@ -56,8 +56,7 @@ public class Move : MonoBehaviour
 		currentActionHasEnded = false;
 		//help_request = false;
 		currentAction = null;
-		myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
-
+		//myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
 		myDesires = new Dictionary<Desire,float> ();
 		InitializeDesires ();
 
@@ -389,7 +388,7 @@ public class Move : MonoBehaviour
 			if(!EnemyAhead ()) {
 				Debug.Log ("He dead");
 				Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
-				mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
+				mat.color = myColor;
 				enemy = null;
 				enemyAhead = false;
 				myColonyComp.SetIsUnderAttack(false);
@@ -981,6 +980,10 @@ public class Move : MonoBehaviour
 
 	// Setters
 
+
+	public void SetColor(Color myColor) {
+		this.myColor = myColor;
+	}
 
 	public void SetColonyPosition (Vector3 position) {
 		myColonyPosition = position;

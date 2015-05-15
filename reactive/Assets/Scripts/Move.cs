@@ -28,7 +28,7 @@ public class Move : MonoBehaviour
 		isEnemyOnSight = false;
 		isObstacleOnSight = false;
 		isSpecFoodOnSight = false;
-		myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
+		//myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
 	}
 
 	/*
@@ -318,6 +318,11 @@ public class Move : MonoBehaviour
 	}
 
 	// Setters
+
+	public void SetColor (Color myColor) {
+		this.myColor = myColor;
+	}
+
 	public void SetIsFoodOnSight (bool isFoodOnSight, GameObject foodOnSight) {
 		this.isFoodOnSight = isFoodOnSight;
 		this.foodOnSight = foodOnSight;

@@ -52,6 +52,8 @@ public class Colony : MonoBehaviour {
 //			Move indComponent = individual.GetComponent<Move> ();
 			// Muda a cor do Robot2
 			individual.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color = individualColor;
+			Move indComponent = individual.GetComponent<Move> ();
+			indComponent.SetColor(individualColor);
 			individuals.Add (individual);
 		}
 	}
@@ -122,6 +124,7 @@ public class Colony : MonoBehaviour {
 			indComponent.SetMyColony(this.gameObject);
 			// Muda a cor do Robot2
 			individual.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material.color = individualColor;
+			indComponent.SetColor(individualColor);
 			this.individuals.Add (individual);
 		}
 
