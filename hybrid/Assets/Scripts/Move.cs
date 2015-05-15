@@ -168,6 +168,7 @@ public class Move : MonoBehaviour
 		Vector3 myPosition = this.transform.position;
 		if (myBeliefs.ContainsKey (myPosition) && myBeliefs [myPosition] != "MyCol") {
 			myBeliefs.Remove(myPosition);
+			commModule.Broadcast(SpeechAtc.INFORM_REMOVE, myBeliefs [myPosition], myPosition);
 		}
 	}
 
