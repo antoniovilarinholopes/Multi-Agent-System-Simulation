@@ -84,16 +84,13 @@ public class Move : MonoBehaviour
 			Filter ();
 			Planner planner = CreateNewPlan ();
 			currentPlan = planner.Plan ();
-			foreach (var belief in myBeliefs.Keys) {
-				Debug.Log (belief + ":" + myBeliefs [belief] );
-			}
 		} else {
 			ChooseAction ();
 
-			/*Debug.Log (myCurrentIntention.Intention ());
+			/*Debug.Log (myCurrentIntention.Intention ());*/
 			if (currentAction != null) {
 				Debug.Log (currentAction.Action ());
-			}*/
+			}
 			bool impossible = Impossible ();
 			if(PlanIsEmpty () || Succeeded () || impossible) {
 				if(currentAction != null && impossible) {
@@ -384,9 +381,7 @@ public class Move : MonoBehaviour
 			}
 		} else if (action == Action.FIGHT_MONSTER) {
 			this.HitEnemy ();
-			Debug.Log ("Killing Him");
 			if(!EnemyAhead ()) {
-				Debug.Log ("He dead");
 				Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
 				mat.color = myColor;
 				enemy = null;
@@ -408,8 +403,7 @@ public class Move : MonoBehaviour
 	float HowManyAtBase () {
 		return myColonyComp.HowManyAtBase ();
 	}
-
-	//FIXME
+	
 	bool Impossible () {
 		//is it possible that with my beliefs i complete my intention(s)?
 		// if the target position is no longer in our beliefs the plan becomes impossible
@@ -417,18 +411,15 @@ public class Move : MonoBehaviour
 		//If intention or action is a always possible one, return true
 		//bool intentionsPossible = (myCurrentIntention.Intention () == Intention.EAT_FOOD) || (myCurrentIntention.Intention () == Intention.SEARCH_FOOD);
 		bool intentionsPossible = (myCurrentIntention.Intention () == Intention.SEARCH_FOOD);
-		bool actionNotNull = currentAction != null;
 		if (intentionsPossible) { 
 			return false; 
 		}
-
+		bool actionNotNull = currentAction != null;
 		if (actionNotNull) {
 			bool pickFoodNotAhead = (currentAction.Action () == Action.PICK_FOOD && !FoodAhead ());
 			bool eatFoodNot = (currentAction.Action () == Action.EAT && !HasFood ());
 			bool fightMonsterNotAhead = (currentAction.Action () == Action.FIGHT_MONSTER && !EnemyAhead ());
 			return pickFoodNotAhead || eatFoodNot || fightMonsterNotAhead; 
-		} else {
-			return true;
 		}
 
 		bool notPossible = currentAction == null || !myBeliefs.ContainsKey(currentAction.Position ());
@@ -799,11 +790,14 @@ public class Move : MonoBehaviour
 	}
 
 	Vector3 MoveRandomly () {
-		int rand = Random.Range(1,1000);
+		int rand = Random.Range(1,100);
 		float multiplier = 2.0f;
+		/*transform.Rotate (0f,-90f,0f);
+		return this.transform.position + this.transform.position.left*multiplier;
+		*/
 		if (rand <= 2) {
 			//transform.Rotate (0f,-90f,0f);
-			return this.transform.position + Vector3.left*multiplier;
+			return this.transform.position + Vector3.forward*multiplier;
 		} else if(rand <= 4) {
 			return this.transform.position + Vector3.right*multiplier;
 				//transform.Rotate (0f,90f,0f);
@@ -900,7 +894,6 @@ public class Move : MonoBehaviour
 
 	void OnTriggerEnter(Collider collider) {
 		if(collider.gameObject.tag == "PlayerA" || collider.gameObject.tag == "PlayerB") {
-			//Debug.Log ("Collision");
 			agentAhead = true;
 		}
 	}
