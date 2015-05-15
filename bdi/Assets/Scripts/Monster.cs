@@ -103,6 +103,11 @@ public class Monster : MonoBehaviour {
 		Instantiate(specFood, position, Quaternion.identity);
 	}
 
+	public void SendBack() {
+		transform.Rotate (0f, 180f, 0f);
+		return;
+	}
+
 	public void SetInColony (bool inColony, GameObject colony) {
 		this.inColony = inColony;
 		this.colonyPos = colony.transform.position;
