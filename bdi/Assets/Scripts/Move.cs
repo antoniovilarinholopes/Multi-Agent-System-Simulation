@@ -57,7 +57,6 @@ public class Move : MonoBehaviour
 		//help_request = false;
 		currentAction = null;
 		//myColor = transform.GetChild (0).GetChild (0).gameObject.GetComponent<Renderer> ().material.color;
-
 		myDesires = new Dictionary<Desire,float> ();
 		InitializeDesires ();
 
@@ -88,6 +87,11 @@ public class Move : MonoBehaviour
 		} else {
 			ChooseAction ();
 
+			/*Debug.Log (myCurrentIntention.Intention ());*/
+			if (currentAction != null) {
+				Debug.Log (currentAction.Action ());
+				Debug.Log (myCurrentIntention.Intention ());
+			}
 			bool impossible = Impossible ();
 			if(PlanIsEmpty () || Succeeded () || impossible) {
 				if(currentAction != null && impossible) {
@@ -342,7 +346,8 @@ public class Move : MonoBehaviour
 			bool isSomethingAhead = IsSomethingAhead();
 			bool populateEnded = myCurrentIntention.Intention () == Intention.POPULATE_AT && AtBase ();
 			bool stopBeforeFoodSource = myCurrentIntention.Intention () == Intention.GOTO_FOODSOURCE_AT && distance_to_target <= 4.0f;
-			if ((stopBeforeFoodSource) || (populateEnded) || (equal_x && equal_z) || (isSomethingAhead && distance_to_target <= 1.5f)) {
+			bool stopAtBase = AtBase () && HasFood () && distance_to_target <= 1.5f;
+			if ((stopAtBase) || (stopBeforeFoodSource) || (populateEnded) || (equal_x && equal_z) || (isSomethingAhead && distance_to_target <= 1.5f)) {
 				currentActionHasEnded = true;
 				return;
 			} 
@@ -378,9 +383,9 @@ public class Move : MonoBehaviour
 			}
 		} else if (action == Action.FIGHT_MONSTER) {
 			this.HitEnemy ();
-			if(!EnemyAhead ()) {
+			if(!EnemyAhead () || !ColonyBeingAttacked ()) {
 				Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
-				mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
+				mat.color = myColor;
 				enemy = null;
 				enemyAhead = false;
 				myColonyComp.SetIsUnderAttack(false);
@@ -400,8 +405,7 @@ public class Move : MonoBehaviour
 	float HowManyAtBase () {
 		return myColonyComp.HowManyAtBase ();
 	}
-
-	//FIXME
+	
 	bool Impossible () {
 		//is it possible that with my beliefs i complete my intention(s)?
 		// if the target position is no longer in our beliefs the plan becomes impossible
@@ -409,18 +413,15 @@ public class Move : MonoBehaviour
 		//If intention or action is a always possible one, return true
 		//bool intentionsPossible = (myCurrentIntention.Intention () == Intention.EAT_FOOD) || (myCurrentIntention.Intention () == Intention.SEARCH_FOOD);
 		bool intentionsPossible = (myCurrentIntention.Intention () == Intention.SEARCH_FOOD);
-		bool actionNotNull = currentAction != null;
 		if (intentionsPossible) { 
 			return false; 
 		}
-
+		bool actionNotNull = currentAction != null;
 		if (actionNotNull) {
 			bool pickFoodNotAhead = (currentAction.Action () == Action.PICK_FOOD && !FoodAhead ());
 			bool eatFoodNot = (currentAction.Action () == Action.EAT && !HasFood ());
 			bool fightMonsterNotAhead = (currentAction.Action () == Action.FIGHT_MONSTER && !EnemyAhead ());
 			return pickFoodNotAhead || eatFoodNot || fightMonsterNotAhead; 
-		} else {
-			return true;
 		}
 
 		bool notPossible = currentAction == null || !myBeliefs.ContainsKey(currentAction.Position ());
@@ -793,6 +794,9 @@ public class Move : MonoBehaviour
 	Vector3 MoveRandomly () {
 		int rand = Random.Range(1,100);
 		float multiplier = 2.0f;
+		/*transform.Rotate (0f,-90f,0f);
+		return this.transform.position + this.transform.position.left*multiplier;
+		*/
 		if (rand <= 2) {
 			//transform.Rotate (0f,-90f,0f);
 			return this.transform.position - this.transform.right*multiplier;
@@ -972,13 +976,13 @@ public class Move : MonoBehaviour
 	// Setters
 
 
+	public void SetColor(Color myColor) {
+		this.myColor = myColor;
+	}
+
 	public void SetColonyPosition (Vector3 position) {
 		myColonyPosition = position;
 		myBeliefs [position] = "MyCol";
-	}
-
-	public void SetColor (Color myColor) {
-		this.myColor = myColor;
 	}
 
 	public void SetMyColony (GameObject myColony) {
@@ -1077,7 +1081,8 @@ public class Move : MonoBehaviour
 		Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
 		mat.color = flashColour;
 		DecreaseLife (hitRate);
-		
+
+		//Debug.Log ("Agent Hitpoints: " + health);
 		mat.color = Color.Lerp (flashColour, myColor, flashSpeed * Time.deltaTime);
 	}
 
