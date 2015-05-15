@@ -88,7 +88,14 @@ public class Move : MonoBehaviour
 			currentPlan = planner.Plan ();
 		} else {
 			ChooseAction ();
-			if(PlanIsEmpty () || Succeeded () || Impossible ()) {
+			bool impossible = Impossible ();
+			if(PlanIsEmpty () || Succeeded () || impossible) {
+				if(currentAction != null && impossible) {
+					bool removeBelief = (myBeliefs.ContainsKey(myCurrentIntention.Position ()) && myBeliefs [myCurrentIntention.Position ()] != "MyCol");
+					if (removeBelief) {
+						myBeliefs.Remove(myCurrentIntention.Position ());
+					}
+				} 
 				currentPlan = null;
 				currentAction = null;
 				currentActionHasEnded = false;
@@ -396,15 +403,26 @@ public class Move : MonoBehaviour
 		return myColonyComp.HowManyAtBase ();
 	}
 
+	//FIXME
 	bool Impossible () {
 		//is it possible that with my beliefs i complete my intention(s)?
 		// if the target position is no longer in our beliefs the plan becomes impossible
 
 		//If intention or action is a always possible one, return true
-		bool intentionsPossible = (myCurrentIntention.Intention () == Intention.EAT_FOOD) || (myCurrentIntention.Intention () == Intention.SEARCH_FOOD);
-		bool actionsPossible = currentAction != null && (currentAction.Action () == Action.PICK_FOOD || currentAction.Action () == Action.EAT || currentAction.Action () == Action.FIGHT_MONSTER);
-		if (intentionsPossible || actionsPossible) {
+		//bool intentionsPossible = (myCurrentIntention.Intention () == Intention.EAT_FOOD) || (myCurrentIntention.Intention () == Intention.SEARCH_FOOD);
+		bool intentionsPossible = (myCurrentIntention.Intention () == Intention.SEARCH_FOOD);
+		bool actionNotNull = currentAction != null;
+		if (intentionsPossible) { 
 			return false; 
+		}
+
+		if (actionNotNull) {
+			bool pickFoodNotAhead = (currentAction.Action () == Action.PICK_FOOD && !FoodAhead ());
+			bool eatFoodNot = (currentAction.Action () == Action.EAT && !HasFood ());
+			bool fightMonsterNotAhead = (currentAction.Action () == Action.FIGHT_MONSTER && !EnemyAhead ());
+			return pickFoodNotAhead || eatFoodNot || fightMonsterNotAhead; 
+		} else {
+			return true;
 		}
 
 		bool notPossible = currentAction == null || !myBeliefs.ContainsKey(currentAction.Position ());

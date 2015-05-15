@@ -34,6 +34,7 @@ public class Colony : MonoBehaviour {
 			colonyLetter = "B";
 		}
 
+		//FIXME
 		for(int i = 0; i < 2; i++) {
 			maxAttempts = 0;
 			// TODO: Ver clearSpace
