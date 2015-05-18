@@ -171,7 +171,7 @@ public class Move : MonoBehaviour
 				float defend_col_multiplier = 1.0f;
 				float number_of_ind_at_base = HowManyAtBase ();
 				//The more there are at base the less I want to go there
-				if (number_of_ind_at_base > 0) {
+				if (number_of_ind_at_base > 0 && !HasFood ()) {
 					defend_col_multiplier = defend_col_multiplier / number_of_ind_at_base;
 				}
 				myDesires [Desire.DEFEND_COL] = 1f * defend_col_multiplier;
@@ -244,12 +244,10 @@ public class Move : MonoBehaviour
 	bool ColonyBeingAttacked () {
 		return myColonyComp.IsUnderAttack ();
 	}
-	
 
-	//FIXME
 	bool CanMakeItThere(Vector3 there) {
 		float distance_to_object = Mathf.Sqrt(DistanceBetweenMeAndPoint (there));
-		return (HasHighLife () && distance_to_object <= 120) || (distance_to_object <= 90 && !HasLowLife ());
+		return (HasHighLife () && distance_to_object <= 120) || (distance_to_object <= 90 && !HasLowLife ()) || (distance_to_object <= 20 && HasLowLife ());
 	}
 
 	void ChooseAction () {	
@@ -560,7 +558,7 @@ public class Move : MonoBehaviour
 				float defend_col_multiplier = 1.0f;
 				float number_of_ind_at_base = HowManyAtBase ();
 				//The more there are at base the less I want to go there
-				if (number_of_ind_at_base > 0) {
+				if (number_of_ind_at_base > 0 && !HasFood ()) {
 					defend_col_multiplier = defend_col_multiplier / number_of_ind_at_base;
 				}
 				IntentionDetails intention = new IntentionDetails(Intention.ATTACK_MONSTER_AT, 1f*defend_col_multiplier, myColonyPosition);
@@ -1059,8 +1057,8 @@ public class Move : MonoBehaviour
 	public void SetIsObstacleOnSight (bool isObstacleOnSight, GameObject obstacleOnSight) {
 		this.isObstacleOnSight = isObstacleOnSight;
 		this.obstacleOnSight = obstacleOnSight;
-		Vector3 obsPosition = obstacleOnSight.transform.position;
 		if(isObstacleOnSight) {
+			Vector3 obsPosition = obstacleOnSight.transform.position;
 			if(!myBeliefs.ContainsKey(obsPosition)) {
 				commModule.Broadcast(SpeechAtc.INFORM_ADD, "Wall", obsPosition);
 				AddToBeliefs("Wall", obsPosition);
