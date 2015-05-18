@@ -249,7 +249,7 @@ public class Move : MonoBehaviour
 	//FIXME
 	bool CanMakeItThere(Vector3 there) {
 		float distance_to_object = Mathf.Sqrt(DistanceBetweenMeAndPoint (there));
-		return (HasHighLife () && distance_to_object <= 80) || (distance_to_object <= 40 && !HasLowLife ());
+		return (HasHighLife () && distance_to_object <= 120) || (distance_to_object <= 90 && !HasLowLife ());
 	}
 
 	void ChooseAction () {	
@@ -350,22 +350,24 @@ public class Move : MonoBehaviour
 			bool isSomethingAhead = IsSomethingAhead();
 			bool populateEnded = myCurrentIntention.Intention () == Intention.POPULATE_AT && AtBase ();
 			bool stopBeforeFoodSource = myCurrentIntention.Intention () == Intention.GOTO_FOODSOURCE_AT && distance_to_target <= 4.0f;
-			bool stopAtBase = AtBase () && HasFood () && distance_to_target <= 1.5f;
+			bool stopAtBase = AtBase () && HasFood () && distance_to_target <= 3f;
 			if ((stopAtBase) || (stopBeforeFoodSource) || (populateEnded) || (equal_x && equal_z) || (isSomethingAhead && distance_to_target <= 1.5f)) {
 				currentActionHasEnded = true;
 				return;
 			} 
 			navMeshAgent.SetDestination (currentAction.Position ());
-		} else if (action == Action.EAT && HasFood ()) {
-			hasFood = false;
-			string food_tag = food.tag;
-			Destroy (food);
-			food = null;
-			float eat_food_val = 10.0f;
-			if (food_tag == "SpecFood") {
-				eat_food_val = 15.0f;
+		} else if (action == Action.EAT) {
+			if(hasFood) {
+				hasFood = false;
+				string food_tag = food.tag;
+				Destroy (food);
+				food = null;
+				float eat_food_val = 10.0f;
+				if (food_tag == "SpecFood") {
+					eat_food_val = 15.0f;
+				}
+				EatFood (eat_food_val); 
 			}
-			EatFood (eat_food_val);
 			currentActionHasEnded = true;
 		} else if (action == Action.PICK_FOOD) {
 			if (FoodAhead ()) {

@@ -282,7 +282,7 @@ public class Move : MonoBehaviour
 	//FIXME
 	bool CanMakeItThere(Vector3 there) {
 		float distance_to_object = Mathf.Sqrt(DistanceBetweenMeAndPoint (there));
-		return (HasHighLife () && distance_to_object <= 80) || (distance_to_object <= 40 && !HasLowLife ());
+		return (HasHighLife () && distance_to_object <= 120) || (distance_to_object <= 90 && !HasLowLife ());
 	}
 
 	void ChooseAction () {	
@@ -383,7 +383,8 @@ public class Move : MonoBehaviour
 			bool isSomethingAhead = IsSomethingAhead();
 			bool populateEnded = myCurrentIntention.Intention () == Intention.POPULATE_AT && AtBase ();
 			bool stopBeforeFoodSource = myCurrentIntention.Intention () == Intention.GOTO_FOODSOURCE_AT && distance_to_target <= 4.0f;
-			if ((stopBeforeFoodSource) || (populateEnded) || (equal_x && equal_z) || (isSomethingAhead && distance_to_target <= 1.5f)) {
+			bool stopAtBase = AtBase () && HasFood () && distance_to_target <= 3f;
+			if ((stopAtBase) || (stopBeforeFoodSource) || (populateEnded) || (equal_x && equal_z) || (isSomethingAhead && distance_to_target <= 1.5f)) {
 				currentActionHasEnded = true;
 				return;
 			} 
@@ -1081,8 +1082,8 @@ public class Move : MonoBehaviour
 	public void SetIsObstacleOnSight (bool isObstacleOnSight, GameObject obstacleOnSight) {
 		this.isObstacleOnSight = isObstacleOnSight;
 		this.obstacleOnSight = obstacleOnSight;
-		Vector3 obsPosition = obstacleOnSight.transform.position;
 		if(isObstacleOnSight) {
+			Vector3 obsPosition = obstacleOnSight.transform.position;
 			if(!myBeliefs.ContainsKey(obsPosition)) {
 				commModule.Broadcast(SpeechAtc.INFORM_ADD, "Wall", obsPosition);
 				AddToBeliefs("Wall", obsPosition);
