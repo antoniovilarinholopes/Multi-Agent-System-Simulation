@@ -376,14 +376,15 @@ public class Move : MonoBehaviour
 
 		Action action = currentAction.Action ();
 		if (action == Action.MOVE_TO) {
-			Vector3 targetPosition = currentAction.Position ();;
+			Vector3 targetPosition = currentAction.Position ();
+			;
 			bool equal_x = this.transform.position.x == targetPosition.x;
 			bool equal_z = this.transform.position.z == targetPosition.z;
-			float distance_to_target = Mathf.Sqrt(DistanceBetweenMeAndPoint(targetPosition));
-			bool isSomethingAhead = IsSomethingAhead();
+			float distance_to_target = Mathf.Sqrt (DistanceBetweenMeAndPoint (targetPosition));
+			bool isSomethingAhead = IsSomethingAhead ();
 			bool populateEnded = myCurrentIntention.Intention () == Intention.POPULATE_AT && AtBase ();
 			bool stopBeforeFoodSource = myCurrentIntention.Intention () == Intention.GOTO_FOODSOURCE_AT && distance_to_target <= 4.0f;
-			bool stopAtBase = AtBase () && HasFood () && distance_to_target <= 3f;
+			bool stopAtBase = AtBase () && HasFood () && myCurrentIntention.Intention () == Intention.GET_FOOD_AT;
 			if ((stopAtBase) || (stopBeforeFoodSource) || (populateEnded) || (equal_x && equal_z) || (isSomethingAhead && distance_to_target <= 1.5f)) {
 				currentActionHasEnded = true;
 				return;
@@ -419,6 +420,9 @@ public class Move : MonoBehaviour
 				currentActionHasEnded = true;
 			}
 		} else if (action == Action.FIGHT_MONSTER) {
+			if (AtBase () && HasFood ()) {
+				DropFood ();
+			}
 			this.HitEnemy ();
 			if(!EnemyAhead ()) {
 				Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;

@@ -214,7 +214,7 @@ public class Colony : MonoBehaviour {
 		}
 	}
 
-
+	/*
 	void OnTriggerStay (Collider collider) {
 		//Debug.Log ("Enter " + collider.gameObject.tag.Substring(6));
 		if(collider.gameObject.tag.StartsWith("Player") && collider.gameObject.tag.Substring(6) == colonyLetter) {
@@ -226,7 +226,7 @@ public class Colony : MonoBehaviour {
 			Monster m = collider.GetComponent<Monster>();
 			m.SetInColony(true, gameObject);
 		}
-	}
+	}*/
 
 	public void Broadcast (SpeechAtc speechAct, string tag, Vector3 obj) {
 		if(speechAct == SpeechAtc.REQUEST_ADD) {

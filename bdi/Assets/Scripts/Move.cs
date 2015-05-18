@@ -348,7 +348,7 @@ public class Move : MonoBehaviour
 			bool isSomethingAhead = IsSomethingAhead();
 			bool populateEnded = myCurrentIntention.Intention () == Intention.POPULATE_AT && AtBase ();
 			bool stopBeforeFoodSource = myCurrentIntention.Intention () == Intention.GOTO_FOODSOURCE_AT && distance_to_target <= 4.0f;
-			bool stopAtBase = AtBase () && HasFood () && distance_to_target <= 3f;
+			bool stopAtBase = AtBase () && HasFood () && myCurrentIntention.Intention () == Intention.GET_FOOD_AT;
 			if ((stopAtBase) || (stopBeforeFoodSource) || (populateEnded) || (equal_x && equal_z) || (isSomethingAhead && distance_to_target <= 1.5f)) {
 				currentActionHasEnded = true;
 				return;
@@ -386,6 +386,9 @@ public class Move : MonoBehaviour
 				currentActionHasEnded = true;
 			}
 		} else if (action == Action.FIGHT_MONSTER) {
+			if (AtBase () && HasFood ()) {
+				DropFood ();
+			}
 			this.HitEnemy ();
 			if(!EnemyAhead () || !ColonyBeingAttacked ()) {
 				Material mat = this.transform.GetChild(0).GetChild(0).GetComponent<Renderer> ().material;
